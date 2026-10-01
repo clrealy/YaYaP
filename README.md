@@ -2,17 +2,24 @@
 
 Because "Yet Another Program" was already taken. 🐧
 
-A small, dependency-light **Linux toolbox** written in pure Bash. One command,
-a bunch of handy subcommands, works on basically any distro.
+A **YaST-style Linux control center** written in pure Bash. Run `yayap` and you
+get a menu-driven Control Center (Software, System, Hardware, Network, Security
+and Users…), or call any module straight from the command line. Works on
+basically any distro: Debian, Fedora, Arch, openSUSE, Alpine and friends.
 
 ```
-$ yayap
- __   __    __   __     ____
- \ \ / /_ _ \ \ / /_ _ |  _ \
-  \ V / _` | \ V / _` || |_) |
-   | | (_| |  | | (_| ||  __/
-   |_|\__,_|  |_|\__,_||_|
-  Yet Another "Yet Another" Program  v0.1.0
+┌───────────────────┤  YaYaP Control Center  ├───────────────────┐
+│ Yet Another "Yet Another" Program — pick a category            │
+│                                                                │
+│                Software           1 module                     │
+│                System             6 modules                    │
+│                Hardware           3 modules                    │
+│                Network            5 modules                    │
+│                Security and Users 3 modules                    │
+│                Misc               3 modules                    │
+│                                                                │
+│             <Ok>                         <Quit>                │
+└────────────────────────────────────────────────────────────────┘
 ```
 
 ## Install
@@ -42,41 +49,70 @@ DESTDIR=/tmp/pkg PREFIX=/usr/local ./install.sh   # staged install for packagers
 
 Or just run it in place: `./bin/yayap`.
 
-## Commands
+## The Control Center
 
-| Command    | What it does |
-|------------|--------------|
-| `sysinfo`  | OS, kernel, uptime, CPU, memory, disk, battery at a glance |
-| `disk`     | Filesystem usage + biggest directories under a path |
-| `bigfiles` | Largest files under a path (`-n N`, `-m MIN_SIZE`) |
-| `clean`    | Report reclaimable junk (caches, trash); `--force` deletes |
-| `pkg`      | One syntax for apt / dnf / yum / pacman / zypper / apk / xbps |
-| `ports`    | Listening TCP/UDP ports and their processes |
-| `killport` | Kill whatever is listening on a port |
-| `myip`     | Local interface addresses + public IP |
-| `extract`  | Extract tar/zip/7z/rar/gz/bz2/xz/zst/deb/rpm |
-| `backup`   | Timestamped `.tar.gz` backups (`-o OUTDIR`) |
-| `passgen`  | Random passwords (`-l LEN`, `-c COUNT`, `-s` simple) |
-| `serve`    | HTTP server for a directory (`-p PORT`) |
-| `weather`  | Terminal weather via wttr.in |
-| `yap`      | A cow-ish yak dispensing wisdom |
+Like YaST, YaYaP is organised as **categories → modules → actions**:
 
-`yayap help <command>` or `yayap <command> -h` shows details.
+```sh
+yayap                 # on a terminal: opens the Control Center
+yayap center          # same thing, explicitly
+yayap center --list   # print every module and action as a tree
+```
+
+- Uses **whiptail** or **dialog** for the ncurses look when installed, or falls
+  back to a plain numbered menu, so it runs anywhere. Force one with
+  `YAYAP_UI=whiptail|dialog|plain`
+- Actions that need input (a service name, a port, a user…) ask for it
+- Every action is just a normal command underneath, and the center shows
+  you which one it runs, so you learn the CLI as you click around
+- Installs a **"YaYaP Control Center"** entry in your app menu
+
+## Modules
+
+| Category | Module | What it does |
+|---|---|---|
+| Software | `pkg` | Install / remove / search / online update, one syntax for apt, dnf, yum, pacman, zypper, apk, xbps |
+| System | `services` | Services Manager: list, start, stop, restart, enable, disable, logs (systemd + OpenRC) |
+| System | `datetime` | Clock, time zone, network time (NTP) |
+| System | `logs` | System log viewer: recent, errors only, this boot, follow, per unit |
+| System | `clean` | Report reclaimable junk (caches, trash); `--force` deletes |
+| System | `backup` | Timestamped `.tar.gz` backups (`-o OUTDIR`) |
+| System | `bigfiles` | Largest files under a path (`-n N`, `-m MIN_SIZE`) |
+| Hardware | `hardware` | CPU, memory, disks, PCI and USB devices |
+| Hardware | `sysinfo` | OS, kernel, uptime, CPU, memory, disk, battery at a glance |
+| Hardware | `disk` | Filesystem usage + biggest directories |
+| Network | `hostname` | Show or change the hostname |
+| Network | `ports` | Listening TCP/UDP ports and their processes |
+| Network | `killport` | Kill whatever is listening on a port |
+| Network | `myip` | Local interface addresses + public IP |
+| Network | `serve` | HTTP server for a directory (`-p PORT`) |
+| Security and Users | `users` | User and Group Management: list, add, delete, passwords, groups |
+| Security and Users | `firewall` | Status, open/close ports, on/off (ufw or firewalld) |
+| Security and Users | `passgen` | Random passwords (`-l LEN`, `-c COUNT`, `-s` simple) |
+| Misc | `extract` | Extract tar/zip/7z/rar/gz/bz2/xz/zst/deb/rpm |
+| Misc | `weather` | Terminal weather via wttr.in |
+| Misc | `yap` | A cow-ish yak dispensing wisdom |
+
+`yayap help <module>` or `yayap <module> -h` shows details.
 Global flags: `-y/--yes` (auto-confirm prompts), `--no-color` (or `NO_COLOR=1`),
-`-V/--version`.
+`-V/--version`. Anything that changes the system uses `sudo`/`doas` only when
+it has to.
 
 ### Examples
 
 ```sh
-yayap pkg install htop        # same command on Debian, Fedora, Arch, Alpine...
-yayap pkg update
-yayap bigfiles ~ -n 20
-yayap clean                   # dry run
+yayap pkg install htop            # same command on Debian, Fedora, Arch, Alpine...
+yayap pkg update                  # "online update"
+yayap services restart sshd
+yayap services enable docker
+yayap users add alex
+yayap users addgroup alex docker
+yayap firewall allow 8080/tcp
+yayap datetime set-tz Europe/Berlin
+yayap logs -e -b                  # errors from this boot
+yayap hardware usb
 yayap clean --force
 yayap extract stuff.tar.zst -d out/
-yayap backup ~/notes ~/.config/nvim
-yayap passgen -l 32 -c 5
-yayap killport 3000
 ```
 
 ## Adding your own command
@@ -85,11 +121,21 @@ Drop a file in `lib/commands/<name>.sh`:
 
 ```bash
 # about: Say hi
+# category: Misc
 cmd_hello() { info "hello, ${1:-world}"; }
 cmd_hello_help() { echo "Usage: yayap hello [NAME]"; }   # optional
+
+# optional: menu entries for the Control Center, "Label|args".
+# {Some_prompt} asks the user for a value; {Things...} splits it into several args.
+cmd_hello_actions() {
+    cat <<'A'
+Say hi to the world|
+Say hi to someone|{Name}
+A
+}
 ```
 
-That's it — it shows up in `yayap help` automatically. Helpers like
+That's it — it shows up in `yayap help` and the Control Center automatically. Helpers like
 `info`, `ok`, `warn`, `die`, `kv`, `has`, `need`, `as_root`, `confirm`, and
 `human_size` come from `lib/core.sh`.
 

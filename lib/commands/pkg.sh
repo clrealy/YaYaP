@@ -1,4 +1,5 @@
 # about: One package-manager syntax for apt, dnf, pacman, zypper, apk
+# category: Software
 cmd_pkg_help() {
     cat <<'H'
 Usage: yayap pkg <install|remove|update|search|info|list> [PACKAGES...]
@@ -65,4 +66,15 @@ cmd_pkg() {
 
         *) die "unknown action '$action' (try: yayap help pkg)" ;;
     esac
+}
+
+cmd_pkg_actions() {
+    cat <<'A'
+Install packages|install {Package_names...}
+Remove a package|remove {Package_name}
+Search packages|search {Search_term}
+Package info|info {Package_name}
+Online update (upgrade everything)|update
+List installed packages|list
+A
 }

@@ -1,4 +1,5 @@
 # about: Kill whatever process is listening on a port
+# category: Network
 cmd_killport_help() { echo "Usage: yayap killport PORT [SIGNAL]   (default signal: TERM)"; }
 cmd_killport() {
     local port="${1:-}" sig="${2:-TERM}" pids
@@ -19,4 +20,10 @@ cmd_killport() {
     confirm "send SIG$sig to these processes?" || return 1
     # shellcheck disable=SC2086
     kill -s "$sig" $pids && ok "sent SIG$sig"
+}
+
+cmd_killport_actions() {
+    cat <<'A'
+Kill process on a port|{Port}
+A
 }

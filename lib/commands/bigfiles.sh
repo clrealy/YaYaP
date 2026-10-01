@@ -1,4 +1,5 @@
 # about: Find the largest files under a path
+# category: System
 cmd_bigfiles_help() {
     cat <<'H'
 Usage: yayap bigfiles [PATH] [-n N] [-m MIN_SIZE]
@@ -25,4 +26,11 @@ cmd_bigfiles() {
         | while IFS=$'\t' read -r size file; do
             printf '%10s  %s\n' "$(human_size "$size")" "$file"
         done
+}
+
+cmd_bigfiles_actions() {
+    cat <<'A'
+Biggest files in a directory|{Directory}
+Biggest files over a size|{Directory} -m {Minimum_size_(e.g._100M)}
+A
 }

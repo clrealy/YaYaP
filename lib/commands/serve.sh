@@ -1,4 +1,5 @@
 # about: Serve a directory over HTTP in one command
+# category: Network
 cmd_serve_help() { echo "Usage: yayap serve [DIR] [-p PORT]   (default: . on port 8000)"; }
 cmd_serve() {
     local dir="." port=8000
@@ -17,4 +18,11 @@ cmd_serve() {
     else
         die "need python3 or busybox"
     fi
+}
+
+cmd_serve_actions() {
+    cat <<'A'
+Serve current directory on :8000|
+Serve a directory|{Directory} -p {Port}
+A
 }

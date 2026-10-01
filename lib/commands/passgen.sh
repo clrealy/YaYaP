@@ -1,4 +1,5 @@
 # about: Generate strong random passwords
+# category: Security and Users
 cmd_passgen_help() {
     cat <<'H'
 Usage: yayap passgen [-l LENGTH] [-c COUNT] [-s]
@@ -22,4 +23,13 @@ cmd_passgen() {
         LC_ALL=C tr -dc "$charset" </dev/urandom | head -c "$len"
         echo
     done
+}
+
+cmd_passgen_actions() {
+    cat <<'A'
+One strong password|
+Five strong passwords|-c 5
+Letters+digits only|-s
+Custom length|-l {Length}
+A
 }

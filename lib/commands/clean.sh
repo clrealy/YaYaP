@@ -1,4 +1,5 @@
 # about: Find (and optionally remove) junk: caches, trash, old logs
+# category: System
 cmd_clean_help() {
     cat <<'H'
 Usage: yayap clean [--force]
@@ -46,4 +47,11 @@ cmd_clean() {
     else
         warn "run as root to also clean package caches and journald logs"
     fi
+}
+
+cmd_clean_actions() {
+    cat <<'A'
+Show reclaimable junk (dry run)|
+Clean it up|--force
+A
 }

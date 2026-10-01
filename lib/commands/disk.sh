@@ -1,4 +1,5 @@
 # about: Disk usage overview and biggest directories under a path
+# category: Hardware
 cmd_disk_help() {
     cat <<'H'
 Usage: yayap disk [PATH] [-n N]
@@ -21,4 +22,11 @@ cmd_disk() {
 
     header "Biggest under $(cd "$path" && pwd)"
     du -xsh -- "$path"/* "$path"/.[!.]* 2>/dev/null | sort -rh | head -n "$n"
+}
+
+cmd_disk_actions() {
+    cat <<'A'
+Overview of current directory|
+Overview of a directory|{Directory}
+A
 }

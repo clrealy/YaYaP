@@ -41,6 +41,31 @@ command -v bzip2 >/dev/null && \
 t "extract tar.bz2"    bash -c "tar -cjf '$TMP/s.tbz2' -C '$TMP' src && '$Y' extract '$TMP/s.tbz2' -d '$TMP/b' && [[ -f '$TMP/b/src/sub/a.txt' ]]"
 t "backup rel path"    bash -c "cd '$TMP/src' && '$Y' backup sub -o '$TMP/bk2' && tar -tzf '$TMP'/bk2/sub-*.tar.gz | grep -q '^sub/a.txt'"
 t "extract missing"    bash -c "! '$Y' extract '$TMP/nope.zip'"
+# --- control center (YaST-style) ---
+t "center --list"      out_has "Security and Users" center --list
+t "center has actions" out_has "yayap services start {Service_name}" center --list
+t "help by category"   out_has "Hardware" help
+# plain UI: Misc (6) -> yap (3) -> Enter -> back -> quit
+t "center plain nav"   bash -c "printf '6\\n3\\n\\nq\\nq\\n' | YAYAP_UI=plain '$Y' center 2>&1 | grep -q '(oo)'"
+# action with a prompt: Security (5) -> passgen -> Custom length (4) -> 12 -> Enter -> back x3
+t "center prompt"      bash -c "printf '5\\n2\\n4\\n12\\n\\nq\\nq\\nq\\n' | YAYAP_UI=plain '$Y' center 2>/dev/null | grep -qx '[[:graph:]]\\{12\\}'"
+t "center cancel"      bash -c "printf 'q\\n' | YAYAP_UI=plain '$Y' center"
+t "no args non-tty"    out_has "Usage:"
+
+# --- YaST-style modules ---
+t "users list"         out_has "root" users list
+t "users bad name"     bash -c "! '$Y' users info 'x;y'"
+t "users addgroup arg" bash -c "! '$Y' users addgroup root"
+t "services bad name"  bash -c "! '$Y' services start 'a b;c'"
+t "hostname show"      out_has "Hostname" hostname
+t "hostname bad set"   bash -c "! '$Y' hostname set '-bad-'"
+t "datetime show"      out_has "Time zone" datetime
+t "datetime bad tz"    bash -c "! '$Y' datetime set-tz 'Nope/Nowhere'"
+t "firewall bad port"  bash -c "! '$Y' firewall allow 'abc'"
+t "hardware"           out_has "Memory" hardware
+t "hardware bad arg"   bash -c "! '$Y' hardware gpu-go-brr"
+t "logs bad arg"       bash -c "! '$Y' logs -n lots"
+
 t "killport bad port"  bash -c "! '$Y' killport abc"
 
 for f in "$ROOT"/bin/yayap "$ROOT"/lib/*.sh "$ROOT"/lib/commands/*.sh "$ROOT"/install.sh; do

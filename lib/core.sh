@@ -1,6 +1,6 @@
 # shellcheck shell=bash
 # Core helpers shared by every YaYaP command.
-# shellcheck disable=SC2034 # color vars are used by command files
+# shellcheck disable=SC2034,SC2153 # color vars are used by command files; YAYAP_LIB comes from bin/yayap
 
 # ---------- output ----------
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
@@ -76,6 +76,14 @@ _cmd_file() { printf '%s/commands/%s.sh' "$YAYAP_LIB" "$1"; }
 # Each command file starts with a line: "# about: <one-line description>"
 _cmd_about() { sed -n 's/^# about: //p' "$1" | head -n1; }
 
+# ...and optionally "# category: <YaST-style category>" (default: Misc).
+YAYAP_CATEGORIES=("Software" "System" "Hardware" "Network" "Security and Users" "Misc")
+_cmd_category() {
+    local c
+    c="$(sed -n 's/^# category: //p' "$1" | head -n1)"
+    echo "${c:-Misc}"
+}
+
 yayap_commands() {
     local f
     for f in "$YAYAP_LIB"/commands/*.sh; do
@@ -99,13 +107,21 @@ BANNER
 
 yayap_help() {
     yayap_banner
-    printf '\n%sUsage:%s yayap <command> [args...]\n' "$C_BOLD" "$C_RESET"
-    printf '       yayap help <command>\n\n%sCommands:%s\n' "$C_BOLD" "$C_RESET"
-    local name
-    while read -r name; do
-        printf '  %s%-12s%s %s\n' "$C_GREEN" "$name" "$C_RESET" "$(_cmd_about "$(_cmd_file "$name")")"
-    done < <(yayap_commands)
+    printf '\n%sUsage:%s yayap                      open the Control Center (TUI)\n' "$C_BOLD" "$C_RESET"
+    printf '       yayap <command> [args...]  run a module directly\n'
+    printf '       yayap help <command>\n'
+    local cat name file
+    for cat in "${YAYAP_CATEGORIES[@]}"; do
+        printf '\n%s%s%s\n' "$C_BOLD" "$cat" "$C_RESET"
+        while read -r name; do
+            file="$(_cmd_file "$name")"
+            [[ "$(_cmd_category "$file")" == "$cat" ]] || continue
+            printf '  %s%-12s%s %s\n' "$C_GREEN" "$name" "$C_RESET" "$(_cmd_about "$file")"
+        done < <(yayap_commands)
+    done
+    printf '\n  %s%-12s%s %s\n' "$C_GREEN" "center" "$C_RESET" "The YaST-style Control Center (--list prints the tree)"
     printf '\n%sGlobal flags:%s -y/--yes (auto-confirm), --no-color, -V/--version, -h/--help\n' "$C_BOLD" "$C_RESET"
+    printf '%sUI:%s YAYAP_UI=whiptail|dialog|plain picks the Control Center look\n' "$C_BOLD" "$C_RESET"
 }
 
 # Commands may define cmd_<name>_help; otherwise we print the about line.
@@ -133,8 +149,18 @@ yayap_main() {
     done
 
     local name="${1:-}"
-    [[ -z "$name" ]] && { yayap_help; return 0; }
-    shift
+    if [[ -z "$name" ]]; then
+        # Like YaST: no arguments on a terminal opens the Control Center.
+        if [[ -t 0 && -t 1 ]]; then name=center; else yayap_help; return 0; fi
+    else
+        shift
+    fi
+
+    if [[ "$name" == center ]]; then
+        # shellcheck source=lib/center.sh
+        source "$YAYAP_LIB/center.sh"
+        yayap_center "$@"; return
+    fi
 
     if [[ "$name" == help ]]; then
         if [[ $# -gt 0 ]]; then yayap_cmd_help "$1"; else yayap_help; fi

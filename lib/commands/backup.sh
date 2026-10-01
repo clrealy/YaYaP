@@ -1,4 +1,5 @@
 # about: Make a timestamped .tar.gz backup of files or directories
+# category: System
 cmd_backup_help() {
     cat <<'H'
 Usage: yayap backup PATH... [-o OUTDIR]
@@ -32,4 +33,11 @@ cmd_backup() {
     done
     tar -czf "$archive" "${args[@]}" || die "tar failed"
     ok "backup created ($(human_size "$(stat -c %s "$archive")"))"
+}
+
+cmd_backup_actions() {
+    cat <<'A'
+Back up a path|{Path_to_back_up}
+Back up a path to a folder|{Path_to_back_up} -o {Output_folder}
+A
 }

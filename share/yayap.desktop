@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=YaYaP Control Center
+GenericName=System Settings
+Comment=Yet Another "Yet Another" Program — a YaST-style Linux toolbox
+Exec=yayap center
+Icon=preferences-system
+Terminal=true
+Categories=System;Settings;
+Keywords=yast;settings;services;users;firewall;packages;

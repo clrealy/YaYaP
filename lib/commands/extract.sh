@@ -1,4 +1,5 @@
 # about: Extract any archive (tar, zip, 7z, rar, gz, xz, zst, ...)
+# category: Misc
 cmd_extract_help() { echo "Usage: yayap extract ARCHIVE... [-d DEST]"; }
 cmd_extract() {
     local dest="" files=()
@@ -40,4 +41,11 @@ cmd_extract() {
         ) && ok "done -> $out" || rc=1
     done
     return $rc
+}
+
+cmd_extract_actions() {
+    cat <<'A'
+Extract an archive here|{Archive_path}
+Extract an archive into a folder|{Archive_path} -d {Destination}
+A
 }
