@@ -1,0 +1,11 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: shellcheck -x bin/yayap lib/*.sh lib/commands/*.sh install.sh tests/run.sh completions/yayap.bash
+      - name: tests
+        run: tests/run.sh

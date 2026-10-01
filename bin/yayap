@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# YaYaP — Yet Another "Yet Another" Program.
+# A modular Linux toolbox. Every command lives in lib/commands/<name>.sh.
+set -o pipefail
+
+# shellcheck disable=SC2034 # used by lib/core.sh
+YAYAP_VERSION="0.1.0"
+
+# Resolve our real location (follows symlinks) so lib/ can be found when installed.
+_self="${BASH_SOURCE[0]}"
+while [[ -L "$_self" ]]; do
+    _dir="$(cd -P "$(dirname "$_self")" && pwd)"
+    _self="$(readlink "$_self")"
+    [[ "$_self" != /* ]] && _self="$_dir/$_self"
+done
+YAYAP_ROOT="$(cd -P "$(dirname "$_self")/.." && pwd)"
+YAYAP_LIB="${YAYAP_LIB:-$YAYAP_ROOT/lib}"
+unset _self _dir
+
+# shellcheck source=lib/core.sh
+source "$YAYAP_LIB/core.sh"
+
+yayap_main "$@"
