@@ -17,11 +17,27 @@ $ yayap
 
 ## Install
 
+With [GURT](https://github.com/clrealy/GURT) 🦆 (works on any distro):
+
+```sh
+gurt install yayap
+```
+
+Don't have gurt yet?
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/clrealy/GURT/main/install.sh | sh
+gurt install yayap
+```
+
+Or by hand:
+
 ```sh
 git clone https://github.com/clrealy/YaYaP && cd YaYaP
 ./install.sh                     # installs to ~/.local (no root needed)
 PREFIX=/usr/local sudo ./install.sh   # or system-wide
 ./install.sh --uninstall
+DESTDIR=/tmp/pkg PREFIX=/usr/local ./install.sh   # staged install for packagers
 ```
 
 Or just run it in place: `./bin/yayap`.

@@ -3,13 +3,15 @@
 #   ./install.sh                 install to ~/.local
 #   PREFIX=/usr/local ./install.sh
 #   ./install.sh --uninstall
+#   DESTDIR=/tmp/pkg PREFIX=/usr/local ./install.sh   (staged install, for packagers like gurt)
 set -euo pipefail
 
 PREFIX="${PREFIX:-$HOME/.local}"
+DESTDIR="${DESTDIR:-}"
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SHARE="$PREFIX/share/yayap"
-BIN="$PREFIX/bin/yayap"
-COMP="$PREFIX/share/bash-completion/completions/yayap"
+SHARE="$DESTDIR$PREFIX/share/yayap"
+BIN="$DESTDIR$PREFIX/bin/yayap"
+COMP="$DESTDIR$PREFIX/share/bash-completion/completions/yayap"
 
 if [[ "${1:-}" == --uninstall ]]; then
     rm -rf -- "$SHARE" "$BIN" "$COMP"
@@ -17,13 +19,14 @@ if [[ "${1:-}" == --uninstall ]]; then
     exit 0
 fi
 
-mkdir -p "$SHARE" "$PREFIX/bin" "$(dirname "$COMP")"
+mkdir -p "$SHARE" "$(dirname "$BIN")" "$(dirname "$COMP")"
 rm -rf -- "${SHARE:?}/bin" "${SHARE:?}/lib"
 cp -r "$SRC/bin" "$SRC/lib" "$SHARE/"
-ln -sf "$SHARE/bin/yayap" "$BIN"
+ln -sf ../share/yayap/bin/yayap "$BIN"   # relative, so it survives DESTDIR staging
 cp "$SRC/completions/yayap.bash" "$COMP"
 
 echo "yayap installed -> $BIN"
+[[ -n "$DESTDIR" ]] && exit 0
 case ":$PATH:" in
     *":$PREFIX/bin:"*) ;;
     *) echo "note: add $PREFIX/bin to your PATH" ;;
