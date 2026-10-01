@@ -14,13 +14,18 @@ cmd_extract() {
     local f out rc=0
     for f in "${files[@]}"; do
         [[ -f "$f" ]] || { err "no such file: $f"; rc=1; continue; }
-        f="$(realpath -- "$f")"
+        f="$(abs_path "$f")"
         out="${dest:-.}"
         info "extracting $(basename "$f")"
         (
             cd -- "$out" || exit 1
             case "${f,,}" in
-                *.tar|*.tar.*|*.tgz|*.tbz|*.tbz2|*.txz|*.tzst) tar -xf "$f" ;;
+                # explicit flags: busybox tar doesn't sniff compression on -xf
+                *.tar)                  tar -xf "$f" ;;
+                *.tar.gz|*.tgz)         tar -xzf "$f" ;;
+                *.tar.bz2|*.tbz|*.tbz2) tar -xjf "$f" ;;
+                *.tar.xz|*.txz)         need unxz; unxz -c "$f" | tar -xf - ;;
+                *.tar.zst|*.tzst)       need zstd; zstd -dqc "$f" | tar -xf - ;;
                 *.zip|*.jar|*.apk|*.whl) need unzip; unzip -q "$f" ;;
                 *.7z)  need 7z; 7z x -y "$f" >/dev/null ;;
                 *.rar) if has unrar; then unrar x -y "$f" >/dev/null; else need 7z; 7z x -y "$f" >/dev/null; fi ;;

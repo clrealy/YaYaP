@@ -14,7 +14,7 @@ cmd_killport() {
     [[ -n "$pids" ]] || { warn "nothing listening on port $port"; return 1; }
     local pid
     for pid in $pids; do
-        info "port $port -> pid $pid ($(ps -o comm= -p "$pid" 2>/dev/null))"
+        info "port $port -> pid $pid ($(cat "/proc/$pid/comm" 2>/dev/null || echo '?'))"
     done
     confirm "send SIG$sig to these processes?" || return 1
     # shellcheck disable=SC2086

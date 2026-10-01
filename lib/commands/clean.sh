@@ -20,9 +20,10 @@ cmd_clean() {
     header "User junk"
     for t in "${targets[@]}"; do
         [[ -d "$t" ]] || continue
-        size="$(du -sb -- "$t" 2>/dev/null | cut -f1)"
-        total=$((total + ${size:-0}))
-        kv "$(human_size "${size:-0}")" "$t"
+        size="$(du -sk -- "$t" 2>/dev/null | cut -f1)"
+        size=$(( ${size:-0} * 1024 ))
+        total=$((total + size))
+        kv "$(human_size "$size")" "$t"
     done
     printf '  %sTotal reclaimable: %s%s\n' "$C_BOLD" "$(human_size "$total")" "$C_RESET"
 

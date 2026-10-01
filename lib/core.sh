@@ -39,6 +39,28 @@ confirm() {
     [[ "$reply" =~ ^[Yy]([Ee][Ss])?$ ]]
 }
 
+# Absolute path without needing GNU realpath (busybox's doesn't take "--").
+abs_path() {
+    local p="${1%/}" d
+    [[ -z "$p" ]] && p=/
+    if [[ -d "$p" ]]; then (cd -- "$p" && pwd -P); return; fi
+    d="$(cd -- "$(dirname -- "$p")" && pwd -P)" || return 1
+    printf '%s/%s\n' "${d%/}" "$(basename -- "$p")"
+}
+
+# "10M", "512k", "2G", "123" -> bytes (1024 base).
+parse_size() {
+    local n="${1%[KkMmGgTt]}" unit="${1:${#1}-1}"
+    [[ "$n" =~ ^[0-9]+$ ]] || return 1
+    case "$unit" in
+        [Kk]) echo $((n * 1024)) ;;
+        [Mm]) echo $((n * 1024 ** 2)) ;;
+        [Gg]) echo $((n * 1024 ** 3)) ;;
+        [Tt]) echo $((n * 1024 ** 4)) ;;
+        *) echo "$n" ;;
+    esac
+}
+
 # Bytes -> human readable (1024 base).
 human_size() {
     awk -v b="${1:-0}" 'BEGIN {

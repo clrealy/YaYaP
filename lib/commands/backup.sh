@@ -19,7 +19,7 @@ cmd_backup() {
 
     mkdir -p -- "$outdir" || return 1
     local name archive
-    name="$(basename "$(realpath -- "${paths[0]}")")"
+    name="$(basename "$(abs_path "${paths[0]}")")"
     [[ ${#paths[@]} -gt 1 ]] && name="backup"
     archive="$outdir/$name-$(date +%Y%m%d-%H%M%S).tar.gz"
 
@@ -27,7 +27,7 @@ cmd_backup() {
     # Store each path relative to its parent so the archive has no absolute paths.
     local -a args=()
     for p in "${paths[@]}"; do
-        p="$(realpath -- "$p")"
+        p="$(abs_path "$p")"
         args+=(-C "$(dirname "$p")" "$(basename "$p")")
     done
     tar -czf "$archive" "${args[@]}" || die "tar failed"

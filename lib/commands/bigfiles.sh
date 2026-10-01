@@ -3,7 +3,7 @@ cmd_bigfiles_help() {
     cat <<'H'
 Usage: yayap bigfiles [PATH] [-n N] [-m MIN_SIZE]
   Lists the N (default 15) biggest files under PATH (default: .),
-  ignoring files smaller than MIN_SIZE (find -size syntax, default 1M).
+  ignoring files smaller than MIN_SIZE (e.g. 500K, 10M, 2G; default 1M).
 H
 }
 cmd_bigfiles() {
@@ -16,7 +16,11 @@ cmd_bigfiles() {
         esac
     done
     [[ -d "$path" ]] || die "not a directory: $path"
-    find "$path" -xdev -type f -size +"$min" -printf '%s\t%p\n' 2>/dev/null \
+    local min_bytes
+    min_bytes="$(parse_size "$min")" || die "bad size: $min (try 500K, 10M, 2G)"
+    # stat -c works with GNU coreutils and busybox (find -printf is GNU-only).
+    find "$path" -xdev -type f -exec stat -c $'%s\t%n' {} + 2>/dev/null \
+        | awk -F'\t' -v min="$min_bytes" '$1 >= min' \
         | sort -rn | head -n "$n" \
         | while IFS=$'\t' read -r size file; do
             printf '%10s  %s\n' "$(human_size "$size")" "$file"

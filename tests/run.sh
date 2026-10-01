@@ -32,9 +32,14 @@ t "disk"               out_has "Filesystems" disk "$ROOT"
 mkdir -p "$TMP/src/sub"; echo hi >"$TMP/src/sub/a.txt"
 dd if=/dev/zero of="$TMP/src/big.bin" bs=1M count=2 status=none
 t "bigfiles"           out_has "big.bin" bigfiles "$TMP/src"
+t "bigfiles min size"  bash -c "! '$Y' bigfiles '$TMP/src' -m 3M | grep -q big.bin"
+t "bigfiles bad size"  bash -c "! '$Y' bigfiles '$TMP/src' -m huge"
 t "backup"             "$Y" backup "$TMP/src" -o "$TMP/bk"
 t "extract tar.gz"     bash -c "'$Y' extract \"\$(ls '$TMP'/bk/*.tar.gz)\" -d '$TMP/x' && [[ -f '$TMP/x/src/sub/a.txt' ]]"
 t "extract .gz"        bash -c "gzip -k '$TMP/src/sub/a.txt' && '$Y' extract '$TMP/src/sub/a.txt.gz' -d '$TMP/g' && grep -q hi '$TMP/g/a.txt'"
+command -v bzip2 >/dev/null && \
+t "extract tar.bz2"    bash -c "tar -cjf '$TMP/s.tbz2' -C '$TMP' src && '$Y' extract '$TMP/s.tbz2' -d '$TMP/b' && [[ -f '$TMP/b/src/sub/a.txt' ]]"
+t "backup rel path"    bash -c "cd '$TMP/src' && '$Y' backup sub -o '$TMP/bk2' && tar -tzf '$TMP'/bk2/sub-*.tar.gz | grep -q '^sub/a.txt'"
 t "extract missing"    bash -c "! '$Y' extract '$TMP/nope.zip'"
 t "killport bad port"  bash -c "! '$Y' killport abc"
 
