@@ -114,7 +114,6 @@ yayap center --list   # print every module and action as a tree
 | Security and Users | `users` | User and Group Management: list, add, delete, passwords, groups |
 | Security and Users | `firewall` | Status, open/close ports, on/off (ufw or firewalld) |
 | Security and Users | `passgen` | Random passwords (`-l LEN`, `-c COUNT`, `-s` simple) |
-| Misc | `ouroboros` | The snake eats itself: YaYaP backs itself up, hatches from the copy, N times, and checks it's still byte-for-byte itself 🐍 |
 | Misc | `extract` | Extract tar/zip/7z/rar/gz/bz2/xz/zst/deb/rpm |
 | Misc | `weather` | Terminal weather via wttr.in |
 | Misc | `yap` | A cow-ish yak dispensing wisdom |
@@ -141,27 +140,10 @@ yayap clean --force
 yayap extract stuff.tar.zst -d out/
 ```
 
-## The ouroboros 🐍
-
-"Yet Another 'Yet Another'" already eats its own tail, so YaYaP does too:
-
-```sh
-yayap ouroboros            # 3 generations
-yayap ouroboros -n 10
-yayap ouroboros --fingerprint
-```
-
-YaYaP packs itself up with its own `backup` module, unpacks the copy with its
-own `extract` module, and hands over to the copy, which does it all again. The
-last generation compares its fingerprint (sha256 of `bin/` + `lib/`) with the
-first one's. If they match, the snake caught its tail, which also proves the
-install can rebuild itself from its own backups.
-
 ## Website
 
 The site lives in [`site/`](site). `tools/build-site.sh` builds it into
-`_site/` with live data from the code (the module list, the version, and a real
-`yayap ouroboros` run), and `.github/workflows/pages.yml` publishes it to
+`_site/` with live data from the code (the module list and the version), and `.github/workflows/pages.yml` publishes it to
 GitHub Pages from the default branch.
 
 ## Adding your own command

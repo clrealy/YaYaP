@@ -35,7 +35,7 @@
   a { color: var(--accent); }
   code, pre, kbd { font-family: ui-monospace, "JetBrains Mono", "DejaVu Sans Mono", Menlo, monospace; }
   .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
-  .hero .wrap > *, .ouro .wrap > *, .split > * { min-width: 0; }   /* let code blocks scroll instead of widening the page */
+  .hero .wrap > *, .split > * { min-width: 0; }   /* let code blocks scroll instead of widening the page */
   @media (max-width: 480px) { .wrap { padding: 0 16px; } }
   section { padding: 84px 0; }
   section + section { border-top: 1px solid var(--border); }
@@ -104,33 +104,7 @@
   .cat .nm { font-family: ui-monospace, "DejaVu Sans Mono", monospace; font-weight: 700; font-size: 14.5px; }
   .cat .ab { color: var(--muted); font-size: 14px; }
 
-  /* ouroboros */
-  .ouro { background: var(--bg-2); }
-  .ouro .wrap { display: grid; grid-template-columns: .9fr 1.1fr; gap: 48px; align-items: center; }
-  .snake-stage { display: grid; place-items: center; }
-  .snake-box { position: relative; width: min(420px, 80vw); }
-  /* the ring isn't centred in the drawing: spin around the ring, not the picture */
-  .snake {
-    display: block; width: 100%; height: auto; transform-origin: 49.4% 53.4%;
-    animation: chase 40s linear infinite;
-    mix-blend-mode: multiply;   /* drops the drawing's white paper on light backgrounds */
-  }
-  @media (prefers-color-scheme: dark) { .snake { filter: invert(1); mix-blend-mode: screen; } }
-  @keyframes chase { to { transform: rotate(-360deg); } }
-  .snake.gulp { animation: chase 40s linear infinite, gulp .45s ease-out 2; }
-  @keyframes gulp { 50% { scale: 1.06; } }
-  @media (prefers-reduced-motion: reduce) { .snake, .snake.gulp { animation: none; } }
-  .gen-count { position: absolute; left: 49.4%; top: 53.4%; transform: translate(-50%, -50%); pointer-events: none; text-align: center; }
-  .gen-count b { display: block; font-size: 64px; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
-  .gen-count span { color: var(--muted); font-size: 14px; }
-  .ouro .term { font-size: 12px; min-height: 290px; border-radius: 12px; border: 1px solid var(--border); }
-  .ouro-controls { display: flex; gap: 12px; align-items: center; margin: 18px 0 0; flex-wrap: wrap; }
-  .btn { border: 0; border-radius: 10px; padding: 10px 18px; font: inherit; font-weight: 650; cursor: pointer; background: var(--accent); color: var(--accent-ink); }
-  .btn:disabled { opacity: .55; cursor: default; }
-  .ouro ol { padding-left: 20px; color: var(--muted); margin: 0 0 22px; }
-  .ouro ol li { margin: 4px 0; }
-  .ouro ol code, .lede code { background: var(--accent-soft); color: var(--accent-2); padding: 0 6px; border-radius: 5px; font-size: .92em; }
-  @media (max-width: 900px) { .ouro .wrap { grid-template-columns: 1fr; } }
+  .lede code, .feat code { background: var(--accent-soft); color: var(--accent-2); padding: 0 6px; border-radius: 5px; font-size: .92em; }
 
   /* add your own */
   .split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
@@ -156,7 +130,6 @@
     <nav>
       <a href="#ways">Three ways in</a>
       <a href="#modules">Modules</a>
-      <a href="#ouroboros">Ouroboros</a>
       <a href="#extend">Extend it</a>
       <a class="gh" href="https://github.com/clrealy/YaYaP">GitHub ↗</a>
     </nav>
@@ -200,7 +173,7 @@
         <div class="way">
           <h3>🖥️ Desktop app</h3>
           <p><code class="run">yayap gui</code> Categories, module tiles, live output. sudo passwords pop up as dialogs.</p>
-          <div class="shot"><img src="img/gui.png" alt="The YaYaP Control Center app, running the ouroboros module" loading="lazy" width="1770" height="1110"></div>
+          <div class="shot"><img src="img/gui.png" alt="The YaYaP Control Center app" loading="lazy" width="1770" height="1110"></div>
         </div>
         <div class="way">
           <h3>⌨️ Terminal UI</h3>
@@ -213,7 +186,7 @@
 <span class="dim">│</span>    Hardware           3 modules         <span class="dim">│</span>
 <span class="dim">│</span>    Network            5 modules         <span class="dim">│</span>
 <span class="dim">│</span>    Security and Users 3 modules         <span class="dim">│</span>
-<span class="dim">│</span>    Misc               <span id="misc-count">4</span> modules         <span class="dim">│</span>
+<span class="dim">│</span>    Misc               <span id="misc-count">3</span> modules         <span class="dim">│</span>
 <span class="dim">│</span>                                         <span class="dim">│</span>
 <span class="dim">│</span>        &lt;Ok&gt;              &lt;Quit&gt;         <span class="dim">│</span>
 <span class="dim">└─────────────────────────────────────────┘</span></pre></div>
@@ -229,7 +202,7 @@
 <span class="dim">$</span> yayap datetime set-tz Europe/Berlin
 <span class="dim">$</span> yayap logs -e -b
 <span class="dim">$</span> yayap hardware usb
-<span class="dim">$</span> yayap ouroboros
+<span class="dim">$</span> yayap clean --force
 <span class="dim">$</span> yayap yap <span class="g">"hi"</span></pre></div>
         </div>
       </div>
@@ -245,32 +218,6 @@
     </div>
   </section>
 
-  <section id="ouroboros" class="ouro">
-    <div class="wrap">
-      <div class="snake-stage">
-        <div class="snake-box">
-          <img class="snake" id="snake" src="img/ouroboros.png" alt="An ouroboros: a snake eating its own tail" width="496" height="547">
-          <div class="gen-count" aria-live="polite"><b id="gen">0</b><span>generations eaten</span></div>
-        </div>
-      </div>
-      <div>
-        <p class="eyebrow">yayap ouroboros</p>
-        <h2>The snake that eats itself 🐍</h2>
-        <p class="lede">"Yet Another 'Yet Another'" already eats its own tail, so YaYaP does too:</p>
-        <ol>
-          <li>It packs itself up with its own <code>backup</code> module…</li>
-          <li>…unpacks the copy with its own <code>extract</code> module…</li>
-          <li>…and hands over to that copy, which does it all again.</li>
-          <li>The last copy compares its fingerprint with the first. Same bytes? The snake caught its tail.</li>
-        </ol>
-        <pre class="term" id="ouro-term"><span class="dim">$</span> yayap ouroboros</pre>
-        <div class="ouro-controls">
-          <button class="btn" id="feed">Feed the snake</button>
-          <span style="color:var(--muted);font-size:14px">This is a real run, recorded when the site was built.</span>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <section id="extend">
     <div class="wrap split">
@@ -318,7 +265,7 @@ A
 <script src="data.js"></script>
 <script>
 "use strict";
-const D = window.YAYAP || { version: "", categories: [], ouroboros: [] };
+const D = window.YAYAP || { version: "", categories: [] };
 const CAT_ICONS = { "Software": "📦", "System": "⚙️", "Hardware": "🖥️", "Network": "🌐", "Security and Users": "🛡️", "Misc": "✨" };
 
 function h(tag, attrs, ...kids) {
@@ -363,29 +310,6 @@ document.getElementById("cats").replaceChildren(...D.categories.map(c =>
         h("span", { class: "nm" }, m.name),
         h("span", { class: "ab" }, m.about)))))));
 
-// the snake
-const term = document.getElementById("ouro-term");
-const feed = document.getElementById("feed");
-const snake = document.getElementById("snake");
-const genEl = document.getElementById("gen");
-const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-let total = 0;
-feed.addEventListener("click", async () => {
-  feed.disabled = true;
-  term.replaceChildren(h("span", { class: "dim" }, "$"), " yayap ouroboros\n");
-  for (const line of D.ouroboros) {
-    await new Promise(r => setTimeout(r, reduced ? 0 : (line.includes("hatched") ? 520 : 70)));
-    const m = line.match(/^\s+gen (\d+)/);
-    if (m && +m[1] > 0) {
-      total++; genEl.textContent = total;
-      snake.classList.remove("gulp"); void snake.offsetWidth; snake.classList.add("gulp");
-    }
-    term.append(/caught its tail|✔/.test(line) ? h("span", { class: "g" }, line) : line, "\n");
-    term.scrollTop = term.scrollHeight;
-  }
-  feed.textContent = "Feed it again";
-  feed.disabled = false;
-});
 </script>
 </body>
 </html>
