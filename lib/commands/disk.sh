@@ -1,5 +1,6 @@
 # about: Disk usage overview and biggest directories under a path
 # category: Hardware
+# icon: 💽
 cmd_disk_help() {
     cat <<'H'
 Usage: yayap disk [PATH] [-n N]

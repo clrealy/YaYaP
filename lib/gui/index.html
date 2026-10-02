@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YaYaP Control Center</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%A7%B0%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f4f6f3; --panel: #ffffff; --panel-2: #eef2ec; --border: #d9e0d5;
+    --text: #1d2a1f; --muted: #5d6b60; --accent: #2f8f46; --accent-ink: #ffffff;
+    --accent-soft: #e2f3e5; --danger: #c0392b; --console: #111814; --console-text: #d7f5dc;
+    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121613; --panel: #1a201b; --panel-2: #222a23; --border: #2f3a31;
+      --text: #e5efe6; --muted: #9aab9d; --accent: #5cc274; --accent-ink: #0d1a10;
+      --accent-soft: #1f3324; --danger: #ff6b5e; --console: #0b0f0c; --console-text: #c9f2d0;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Cantarell, "Noto Sans", Ubuntu, sans-serif;
+    display: grid; grid-template-rows: auto 1fr; overflow: hidden;
+  }
+  button, input { font: inherit; color: inherit; }
+  code, pre { font-family: ui-monospace, "JetBrains Mono", "DejaVu Sans Mono", monospace; }
+
+  header {
+    display: flex; align-items: center; gap: 14px; padding: 10px 18px;
+    background: var(--panel); border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .logo {
+    width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+    background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 15px; flex: none;
+  }
+  .brand h1 { font-size: 16px; margin: 0; white-space: nowrap; }
+  .brand small { display: block; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .search { margin-left: auto; flex: 0 1 320px; }
+  .search input {
+    width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--panel-2); outline: none;
+  }
+  .search input:focus { border-color: var(--accent); }
+
+  .layout { display: grid; grid-template-columns: 230px 1fr; min-height: 0; }
+  nav { background: var(--panel); border-right: 1px solid var(--border); padding: 12px 8px; overflow: auto; }
+  nav button {
+    display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; margin: 1px 0;
+    border: 0; border-radius: 8px; background: none; cursor: pointer; text-align: left;
+  }
+  nav button:hover { background: var(--panel-2); }
+  nav button.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  nav .count { margin-left: auto; color: var(--muted); font-size: 12px; font-weight: 400; }
+  nav .ico { width: 22px; text-align: center; }
+
+  main { overflow: auto; padding: 22px 26px 40px; min-width: 0; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 22px 0 10px; }
+  h2:first-child { margin-top: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+  .tile {
+    display: flex; gap: 12px; align-items: flex-start; text-align: left; cursor: pointer;
+    padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel);
+    box-shadow: var(--shadow); transition: transform .08s ease, border-color .08s ease;
+  }
+  .tile:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .tile .ico { font-size: 26px; line-height: 1; flex: none; }
+  .tile b { display: block; font-size: 14px; }
+  .tile span { color: var(--muted); font-size: 12.5px; }
+  .empty { color: var(--muted); padding: 30px 0; }
+
+  .back { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; margin-bottom: 14px; font-weight: 600; }
+  .mod-head { display: flex; gap: 14px; align-items: center; margin-bottom: 18px; }
+  .mod-head .ico { font-size: 40px; }
+  .mod-head h3 { margin: 0; font-size: 22px; }
+  .mod-head p { margin: 2px 0 0; color: var(--muted); }
+  .actions { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+  .action {
+    border: 1px solid var(--border); border-radius: 12px; background: var(--panel); padding: 14px;
+    box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px;
+  }
+  .action b { font-size: 14px; }
+  .action code { font-size: 12px; color: var(--muted); word-break: break-all; }
+  .action label { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--muted); }
+  .action input {
+    padding: 7px 10px; border-radius: 7px; border: 1px solid var(--border); background: var(--panel-2); outline: none;
+  }
+  .action input:focus { border-color: var(--accent); }
+  .btn {
+    align-self: flex-start; border: 0; border-radius: 8px; padding: 7px 16px; cursor: pointer;
+    background: var(--accent); color: var(--accent-ink); font-weight: 600;
+  }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.ghost { background: var(--panel-2); color: var(--text); }
+  .btn.danger { background: var(--danger); color: #fff; }
+
+  .console { margin-top: 20px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); display: none; }
+  .console.show { display: block; }
+  .console-bar {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--panel-2);
+    border-bottom: 1px solid var(--border);
+  }
+  .console-bar .title { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .status { font-size: 12px; padding: 2px 9px; border-radius: 999px; background: var(--panel); border: 1px solid var(--border); white-space: nowrap; }
+  .status.ok { color: var(--accent); border-color: var(--accent); }
+  .status.bad { color: var(--danger); border-color: var(--danger); }
+  .console-bar .spacer { flex: 1; }
+  .console-bar .btn { padding: 4px 12px; font-size: 12.5px; }
+  pre.out {
+    margin: 0; padding: 14px; background: var(--console); color: var(--console-text);
+    font-size: 12.5px; line-height: 1.5; min-height: 140px; max-height: 46vh; overflow: auto; white-space: pre-wrap; word-break: break-word;
+  }
+
+  dialog {
+    border: 1px solid var(--border); border-radius: 14px; background: var(--panel); color: var(--text);
+    padding: 20px; width: min(420px, calc(100vw - 32px)); box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  }
+  dialog::backdrop { background: rgba(0,0,0,.4); }
+  dialog h4 { margin: 0 0 6px; font-size: 16px; }
+  dialog p { margin: 0 0 14px; color: var(--muted); word-break: break-word; }
+  dialog input { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); margin-bottom: 14px; }
+  dialog .row { display: flex; justify-content: flex-end; gap: 8px; }
+
+  @media (max-width: 720px) {
+    .layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    nav { display: flex; overflow-x: auto; padding: 6px; border-right: 0; border-bottom: 1px solid var(--border); }
+    nav button { width: auto; white-space: nowrap; }
+    nav .count { display: none; }
+    header { flex-wrap: wrap; }
+    .search { margin-left: 0; flex: 1 1 100%; }
+    main { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">Ya</div>
+    <div><h1>YaYaP Control Center</h1><small id="who">Yet Another "Yet Another" Program</small></div>
+  </div>
+  <div class="search"><input id="q" type="search" placeholder="Search modules…" autocomplete="off"></div>
+</header>
+<div class="layout">
+  <nav id="nav"></nav>
+  <main id="main"><div class="empty">Loading…</div></main>
+</div>
+
+<dialog id="ask">
+  <form method="dialog" id="ask-form">
+    <h4 id="ask-title"></h4>
+    <p id="ask-prompt"></p>
+    <input id="ask-input" type="password" autocomplete="off">
+    <div class="row">
+      <button class="btn ghost" value="cancel" id="ask-cancel" type="button">Cancel</button>
+      <button class="btn" value="ok" id="ask-ok">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+"use strict";
+const TOKEN = "__TOKEN__";
+const CAT_ICONS = { "Software": "📦", "System": "⚙️", "Hardware": "🖥️", "Network": "🌐", "Security and Users": "🛡️", "Misc": "✨" };
+const state = { cats: [], cat: null, query: "", module: null, job: null, since: 0, timer: null, asking: false };
+
+const api = async (path, body) => {
+  const r = await fetch(path, {
+    method: body === undefined ? "GET" : "POST",
+    headers: { "X-YaYaP-Token": TOKEN, "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+};
+
+// tiny DOM helper — text only, never innerHTML
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (k === "class") el.className = v;
+    else el.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) if (kid != null) el.append(kid.nodeType ? kid : String(kid));
+  return el;
+}
+
+// "{Port_(e.g._22)}" -> "<port>" for the command preview
+const prettyTemplate = t => t.replace(/\{([^}]+)\}/g, (_, p) =>
+  "<" + p.replace(/\.\.\.$/, "…").replace(/_\(.*$/, "").replace(/_/g, " ").toLowerCase() + ">");
+
+const allModules = () => state.cats.flatMap(c => c.modules);
+
+function renderNav() {
+  const nav = document.getElementById("nav");
+  nav.replaceChildren(
+    h("button", { class: state.cat === null ? "active" : "", onclick: () => pick(null) },
+      h("span", { class: "ico" }, "🏠"), "All modules", h("span", { class: "count" }, allModules().length)),
+    ...state.cats.map(c => h("button", { class: state.cat === c.name ? "active" : "", onclick: () => pick(c.name) },
+      h("span", { class: "ico" }, CAT_ICONS[c.name] || "🧩"), c.name, h("span", { class: "count" }, c.modules.length)))
+  );
+}
+
+function pick(cat) {
+  state.cat = cat; state.module = null;
+  renderNav(); renderHome();
+}
+
+function matches(m) {
+  const q = state.query.trim().toLowerCase();
+  if (!q) return true;
+  return [m.name, m.about, m.category, ...m.actions.map(a => a.label)].join(" ").toLowerCase().includes(q);
+}
+
+function renderHome() {
+  const main = document.getElementById("main");
+  const cats = state.cats.filter(c => state.cat === null || c.name === state.cat || state.query);
+  const blocks = [];
+  for (const c of cats) {
+    const mods = c.modules.filter(matches);
+    if (!mods.length) continue;
+    blocks.push(h("h2", {}, `${CAT_ICONS[c.name] || ""} ${c.name}`));
+    blocks.push(h("div", { class: "grid" }, mods.map(m =>
+      h("button", { class: "tile", onclick: () => openModule(m.name), "data-module": m.name },
+        h("span", { class: "ico" }, m.icon),
+        h("div", {}, h("b", {}, m.name), h("span", {}, m.about))))));
+  }
+  main.replaceChildren(...(blocks.length ? blocks : [h("div", { class: "empty" }, "No modules match that search.")]));
+  main.scrollTop = 0;
+}
+
+function openModule(name) {
+  const m = allModules().find(x => x.name === name);
+  if (!m) return;
+  state.module = m;
+  const main = document.getElementById("main");
+  const actions = m.actions.length ? m.actions : [{ label: `Run ${m.name}`, template: "", fields: [], solo: true }];
+
+  const cards = actions.map((a, i) => {
+    const inputs = a.fields.map(f => h("input", {
+      type: "text", placeholder: f.many ? "one or more, separated by spaces" : "", "aria-label": f.prompt,
+      onkeydown: e => { if (e.key === "Enter") run(); },
+    }));
+    const btn = h("button", { class: "btn", onclick: () => run() }, "Run");
+    function run() {
+      const values = inputs.map(x => x.value.trim());
+      const missing = inputs.find(x => !x.value.trim());
+      if (missing) { missing.focus(); return; }
+      startJob(m, a.solo ? -1 : i, values, a.label);
+    }
+    return h("div", { class: "action" },
+      h("b", {}, a.label),
+      h("code", {}, `yayap ${m.name} ${prettyTemplate(a.template)}`.trim()),
+      a.fields.map((f, k) => h("label", {}, f.prompt, inputs[k])),
+      btn);
+  });
+
+  main.replaceChildren(
+    h("button", { class: "back", onclick: () => { state.module = null; renderHome(); } }, "← All modules"),
+    h("div", { class: "mod-head" },
+      h("span", { class: "ico" }, m.icon),
+      h("div", {}, h("h3", {}, m.name), h("p", {}, `${m.about} · ${m.category}`))),
+    h("div", { class: "actions" }, cards),
+    h("div", { class: "console", id: "console" },
+      h("div", { class: "console-bar" },
+        h("span", { class: "title", id: "con-title" }, ""),
+        h("span", { class: "status", id: "con-status" }, ""),
+        h("span", { class: "spacer" }),
+        h("button", { class: "btn danger", id: "con-stop", onclick: stopJob }, "Stop"),
+        h("button", { class: "btn ghost", onclick: () => document.getElementById("console").classList.remove("show") }, "Close")),
+      h("pre", { class: "out", id: "con-out" }))
+  );
+  main.scrollTop = 0;
+  if (state.job && !state.job.done && state.job.module === m.name) showConsole(state.job.label);
+}
+
+function showConsole(title) {
+  const c = document.getElementById("console");
+  if (!c) return;
+  c.classList.add("show");
+  document.getElementById("con-title").textContent = title;
+}
+
+function setStatus(text, cls) {
+  const s = document.getElementById("con-status");
+  if (!s) return;
+  s.textContent = text; s.className = "status " + (cls || "");
+  const stop = document.getElementById("con-stop");
+  if (stop) stop.style.display = cls === undefined ? "" : "none";
+}
+
+async function startJob(m, action, values, label) {
+  if (state.job && !state.job.done) {
+    if (!confirm("Something is still running. Stop it and run this instead?")) return;
+    await stopJob();
+  }
+  try {
+    const { job } = await api("/api/run", { module: m.name, action, values });
+    state.job = { id: job, module: m.name, label, done: false };
+    state.since = 0;
+    showConsole(label);
+    document.getElementById("con-out").textContent = "";
+    setStatus("running…");
+    clearInterval(state.timer);
+    state.timer = setInterval(poll, 350);
+    poll();
+    document.getElementById("console").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  } catch (e) {
+    alert("Couldn't start: " + e.message);
+  }
+}
+
+async function poll() {
+  const job = state.job;
+  if (!job) return;
+  let r;
+  try { r = await api(`/api/job?id=${encodeURIComponent(job.id)}&since=${state.since}`); }
+  catch { return; }
+  state.since = r.next;
+  const out = document.getElementById("con-out");
+  if (out && state.module && state.module.name === job.module && r.lines.length) {
+    const atBottom = out.scrollHeight - out.scrollTop - out.clientHeight < 40;
+    out.append(r.lines.join("\n") + "\n");
+    if (atBottom) out.scrollTop = out.scrollHeight;
+  }
+  if (r.ask && !state.asking) answerAsk(job, r.ask);
+  if (r.done) {
+    job.done = true;
+    clearInterval(state.timer);
+    if (state.module && state.module.name === job.module)
+      setStatus(r.rc === 0 ? "✓ done" : r.rc < 0 ? "■ stopped" : `exit ${r.rc}`, r.rc === 0 ? "ok" : "bad");
+  }
+}
+
+function answerAsk(job, ask) {
+  state.asking = true;
+  const dlg = document.getElementById("ask");
+  const input = document.getElementById("ask-input");
+  const titles = { password: "🔐 Administrator password", secret: "🔑 Password", confirm: "Are you sure?" };
+  document.getElementById("ask-title").textContent = titles[ask.kind] || "Question";
+  document.getElementById("ask-prompt").textContent = ask.prompt;
+  input.value = "";
+  input.style.display = ask.kind === "confirm" ? "none" : "";
+  document.getElementById("ask-ok").textContent = ask.kind === "confirm" ? "Yes" : "OK";
+  const finish = async (cancel) => {
+    dlg.close();
+    try { await api("/api/answer", { job: job.id, cancel, value: cancel ? "" : input.value }); } catch {}
+    input.value = "";
+    state.asking = false;
+  };
+  document.getElementById("ask-cancel").onclick = () => finish(true);
+  document.getElementById("ask-form").onsubmit = (e) => { e.preventDefault(); finish(false); };
+  dlg.oncancel = (e) => { e.preventDefault(); finish(true); };
+  dlg.showModal();
+  if (ask.kind !== "confirm") input.focus();
+}
+
+async function stopJob() {
+  if (!state.job) return;
+  try { await api("/api/stop", { job: state.job.id }); } catch {}
+}
+
+document.getElementById("q").addEventListener("input", e => {
+  state.query = e.target.value;
+  state.module = null;
+  renderHome();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && state.module && !document.getElementById("ask").open) { state.module = null; renderHome(); }
+  if (e.key === "/" && document.activeElement.tagName !== "INPUT") { e.preventDefault(); document.getElementById("q").focus(); }
+});
+
+(async () => {
+  try {
+    const t = await api("/api/tree");
+    state.cats = t.categories;
+    document.getElementById("who").textContent = `${t.user}@${t.host}`;
+    renderNav(); renderHome();
+  } catch (e) {
+    document.getElementById("main").replaceChildren(h("div", { class: "empty" }, "Couldn't load modules: " + e.message));
+  }
+  setInterval(() => api("/api/ping", {}).catch(() => {}), 10000);
+  api("/api/ping", {}).catch(() => {});
+})();
+</script>
+</body>
+</html>

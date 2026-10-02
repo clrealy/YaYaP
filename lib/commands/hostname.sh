@@ -1,5 +1,6 @@
 # about: Hostname: show or change this machine's name
 # category: Network
+# icon: 🏷️
 cmd_hostname_help() { echo "Usage: yayap hostname [show | set NAME]"; }
 cmd_hostname() {
     case "${1:-show}" in

@@ -1,5 +1,6 @@
 # about: List listening TCP/UDP ports and the processes behind them
 # category: Network
+# icon: 🔌
 cmd_ports() {
     if has ss; then
         ss -tulpnH 2>/dev/null | awk '{

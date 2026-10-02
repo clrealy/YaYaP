@@ -2,9 +2,10 @@
 Type=Application
 Name=YaYaP Control Center
 GenericName=System Settings
-Comment=Yet Another "Yet Another" Program — a YaST-style Linux toolbox
-Exec=yayap center
+Comment=Yet Another "Yet Another" Program — a YaST-style Linux control center
+Exec=yayap gui
 Icon=preferences-system
-Terminal=true
+Terminal=false
 Categories=System;Settings;
 Keywords=yast;settings;services;users;firewall;packages;
+StartupWMClass=yayap

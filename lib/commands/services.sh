@@ -1,5 +1,6 @@
 # about: Services Manager: start, stop, enable and inspect services
 # category: System
+# icon: ⚙️
 cmd_services_help() {
     cat <<'H'
 Usage: yayap services <list|failed|status|start|stop|restart|enable|disable|logs> [SERVICE]

@@ -1,5 +1,6 @@
 # about: Find the largest files under a path
 # category: System
+# icon: 🐘
 cmd_bigfiles_help() {
     cat <<'H'
 Usage: yayap bigfiles [PATH] [-n N] [-m MIN_SIZE]

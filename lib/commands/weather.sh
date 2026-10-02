@@ -1,5 +1,6 @@
 # about: Weather report in your terminal (via wttr.in)
 # category: Misc
+# icon: 🌦️
 cmd_weather() {
     need curl
     local loc="${*// /+}"

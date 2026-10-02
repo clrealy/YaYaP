@@ -4,7 +4,7 @@ _yayap() {
     if [[ $COMP_CWORD -eq 1 || ( $COMP_CWORD -eq 2 && "${COMP_WORDS[1]}" == help ) ]]; then
         local lib
         lib="$(dirname "$(readlink -f "$(command -v yayap)")")/../lib/commands"
-        local f cmds="help center"
+        local f cmds="help center gui"
         for f in "$lib"/*.sh; do
             [[ -e "$f" ]] || continue
             f="${f##*/}"

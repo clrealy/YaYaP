@@ -51,6 +51,8 @@ t "center plain nav"   bash -c "printf '6\\n3\\n\\nq\\nq\\n' | YAYAP_UI=plain '$
 t "center prompt"      bash -c "printf '5\\n2\\n4\\n12\\n\\nq\\nq\\nq\\n' | YAYAP_UI=plain '$Y' center 2>/dev/null | grep -qx '[[:graph:]]\\{12\\}'"
 t "center cancel"      bash -c "printf 'q\\n' | YAYAP_UI=plain '$Y' center"
 t "no args non-tty"    out_has "Usage:"
+t "center --tsv"       bash -c "'$Y' center --tsv | grep -q \$'^A\\tservices\\tStart a service\\tstart {Service_name}\$'"
+t "every module icon"  bash -c "! '$Y' center --tsv | awk -F'\\t' '\$1==\"M\" && \$4==\"🧩\"' | grep -q ."
 
 # --- YaST-style modules ---
 t "users list"         out_has "root" users list
@@ -71,6 +73,18 @@ t "killport bad port"  bash -c "! '$Y' killport abc"
 for f in "$ROOT"/bin/yayap "$ROOT"/lib/*.sh "$ROOT"/lib/commands/*.sh "$ROOT"/install.sh; do
     t "syntax $(basename "$f")" bash -n "$f"
 done
+
+# GUI (needs python3; skipped where there's none)
+if command -v python3 >/dev/null; then
+    for f in "$ROOT"/lib/gui/*.py "$ROOT"/tests/*.py; do
+        t "syntax $(basename "$f")" python3 -c "import ast, sys; ast.parse(open(sys.argv[1]).read())" "$f"
+    done
+    if python3 "$ROOT/tests/gui_test.py" >"$TMP/gui" 2>&1; then
+        n=$(grep -c '^ok' "$TMP/gui"); pass=$((pass + n)); printf 'ok   gui server (%d checks)\n' "$n"
+    else
+        fail=$((fail + 1)); printf 'FAIL gui server\n'; sed 's/^/     /' "$TMP/gui"
+    fi
+fi
 
 printf '\n%d passed, %d failed\n' "$pass" "$fail"
 [[ $fail -eq 0 ]]

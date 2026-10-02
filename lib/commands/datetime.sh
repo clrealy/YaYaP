@@ -1,5 +1,6 @@
 # about: Date and Time: clock, time zone and network time (NTP)
 # category: System
+# icon: 🕒
 cmd_datetime_help() {
     cat <<'H'
 Usage: yayap datetime [show | zones [FILTER] | set-tz ZONE | ntp on|off]

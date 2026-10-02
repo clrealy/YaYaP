@@ -12,20 +12,20 @@ SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SHARE="$DESTDIR$PREFIX/share/yayap"
 BIN="$DESTDIR$PREFIX/bin/yayap"
 COMP="$DESTDIR$PREFIX/share/bash-completion/completions/yayap"
-DESKTOP="$DESTDIR$PREFIX/share/applications/yayap.desktop"
+APPS="$DESTDIR$PREFIX/share/applications"
 
 if [[ "${1:-}" == --uninstall ]]; then
-    rm -rf -- "$SHARE" "$BIN" "$COMP" "$DESKTOP"
+    rm -rf -- "$SHARE" "$BIN" "$COMP" "$APPS/yayap.desktop" "$APPS/yayap-tui.desktop"
     echo "yayap uninstalled from $PREFIX"
     exit 0
 fi
 
-mkdir -p "$SHARE" "$(dirname "$BIN")" "$(dirname "$COMP")" "$(dirname "$DESKTOP")"
+mkdir -p "$SHARE" "$(dirname "$BIN")" "$(dirname "$COMP")" "$APPS"
 rm -rf -- "${SHARE:?}/bin" "${SHARE:?}/lib"
 cp -r "$SRC/bin" "$SRC/lib" "$SHARE/"
 ln -sf ../share/yayap/bin/yayap "$BIN"   # relative, so it survives DESTDIR staging
 cp "$SRC/completions/yayap.bash" "$COMP"
-cp "$SRC/share/yayap.desktop" "$DESKTOP"   # "YaYaP Control Center" in your app menu
+cp "$SRC/share/yayap.desktop" "$SRC/share/yayap-tui.desktop" "$APPS/"   # app menu: GUI + terminal
 
 echo "yayap installed -> $BIN"
 [[ -n "$DESTDIR" ]] && exit 0

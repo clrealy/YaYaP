@@ -1,5 +1,6 @@
 # about: Serve a directory over HTTP in one command
 # category: Network
+# icon: 🛰️
 cmd_serve_help() { echo "Usage: yayap serve [DIR] [-p PORT]   (default: . on port 8000)"; }
 cmd_serve() {
     local dir="." port=8000

@@ -1,5 +1,6 @@
 # about: Find (and optionally remove) junk: caches, trash, old logs
 # category: System
+# icon: 🧹
 cmd_clean_help() {
     cat <<'H'
 Usage: yayap clean [--force]

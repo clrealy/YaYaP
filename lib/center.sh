@@ -116,8 +116,29 @@ yayap_center_list() {
     done
 }
 
+# Machine-readable tree for the GUI, tab-separated:
+#   M <category> <module> <icon> <about>
+#   A <module> <label> <args template>
+yayap_center_tsv() {
+    local cat name file fn label template
+    for cat in "${YAYAP_CATEGORIES[@]}"; do
+        while read -r name; do
+            file="$(_cmd_file "$name")"
+            printf 'M\t%s\t%s\t%s\t%s\n' "$cat" "$name" "$(_cmd_icon "$file")" "$(_cmd_about "$file")"
+            # shellcheck source=/dev/null
+            source "$file"
+            fn="cmd_${name//-/_}_actions"
+            declare -F "$fn" >/dev/null || continue
+            while IFS='|' read -r label template; do
+                [[ -n "$label" ]] && printf 'A\t%s\t%s\t%s\n' "$name" "$label" "$template"
+            done < <("$fn")
+        done < <(_center_modules "$cat")
+    done
+}
+
 yayap_center() {
     if [[ "${1:-}" == --list ]]; then yayap_center_list; return; fi
+    if [[ "${1:-}" == --tsv ]]; then yayap_center_tsv; return; fi
     local cat choice n
     local -a items=()
     for cat in "${YAYAP_CATEGORIES[@]}"; do

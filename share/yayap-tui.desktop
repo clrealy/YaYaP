@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=YaYaP Control Center (Terminal)
+GenericName=System Settings
+Comment=The YaYaP Control Center as a terminal UI
+Exec=yayap center
+Icon=utilities-terminal
+Terminal=true
+Categories=System;Settings;
+Keywords=yast;settings;tui;ncurses;

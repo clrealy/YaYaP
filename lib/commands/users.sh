@@ -1,5 +1,6 @@
 # about: User and Group Management
 # category: Security and Users
+# icon: 👥
 cmd_users_help() {
     cat <<'H'
 Usage: yayap users <list|info|add|del|passwd|addgroup|groups> [USER] [GROUP]
@@ -14,6 +15,18 @@ H
 }
 
 _valid_name() { [[ "$1" =~ ^[a-z_][a-z0-9_.-]*\$?$ && ${#1} -le 32 ]] || die "invalid name: $1"; }
+
+# Terminal: the real passwd. GUI: ask twice in a dialog, then chpasswd.
+_set_password() {
+    local user="$1" p1 p2
+    if [[ -z "${YAYAP_ASK:-}" ]]; then as_root passwd "$user"; return; fi
+    p1="$(ask_secret "New password for $user")" || return 1
+    p2="$(ask_secret "Repeat the password for $user")" || return 1
+    [[ -n "$p1" ]] || die "empty password, nothing changed"
+    [[ "$p1" == "$p2" ]] || die "passwords don't match, nothing changed"
+    need chpasswd
+    printf '%s:%s\n' "$user" "$p1" | as_root chpasswd && ok "password changed for $user"
+}
 
 cmd_users() {
     local action="${1:-list}" user="${2:-}" group="${3:-}"
@@ -33,13 +46,13 @@ cmd_users() {
             else as_root adduser -D "$user"
             fi || die "couldn't create $user"
             ok "created $user"
-            as_root passwd "$user" ;;
+            _set_password "$user" ;;
         del)
             confirm "delete user $user AND their home directory?" || return 1
             if has userdel; then as_root userdel -r "$user"
             else as_root deluser --remove-home "$user"
             fi && ok "deleted $user" ;;
-        passwd) as_root passwd "$user" ;;
+        passwd) _set_password "$user" ;;
         addgroup)
             [[ -n "$group" ]] || die "which group?"; _valid_name "$group"
             if has usermod; then as_root usermod -aG "$group" "$user"

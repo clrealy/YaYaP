@@ -1,5 +1,6 @@
 # about: Generate strong random passwords
 # category: Security and Users
+# icon: 🔑
 cmd_passgen_help() {
     cat <<'H'
 Usage: yayap passgen [-l LENGTH] [-c COUNT] [-s]

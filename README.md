@@ -2,10 +2,11 @@
 
 Because "Yet Another Program" was already taken. 🐧
 
-A **YaST-style Linux control center** written in pure Bash. Run `yayap` and you
-get a menu-driven Control Center (Software, System, Hardware, Network, Security
-and Users…), or call any module straight from the command line. Works on
-basically any distro: Debian, Fedora, Arch, openSUSE, Alpine and friends.
+A **YaST-style Linux control center** written in Bash. Like YaST it comes three
+ways: a **desktop app** (`yayap gui`), a **terminal UI** (`yayap`), and plain
+**commands** (`yayap services restart sshd`). Categories are Software, System,
+Hardware, Network, Security and Users, and Misc. Works on basically any distro:
+Debian, Fedora, Arch, openSUSE, Alpine and friends.
 
 ```
 ┌───────────────────┤  YaYaP Control Center  ├───────────────────┐
@@ -49,7 +50,29 @@ DESTDIR=/tmp/pkg PREFIX=/usr/local ./install.sh   # staged install for packagers
 
 Or just run it in place: `./bin/yayap`.
 
-## The Control Center
+## The GUI 🖥️
+
+```sh
+yayap gui               # opens the Control Center as a desktop app
+yayap gui --no-window   # just print the URL (e.g. to open it yourself)
+```
+
+- YaST-style layout: categories on the left, module tiles on the right, then
+  each module's actions as cards with input fields and a live output console
+  (with a Stop button for things like `serve` or `logs -f`)
+- **sudo password**, "are you sure?" and new-password prompts pop up as
+  dialogs in the app
+- Search box (press `/`), light and dark mode, works on narrow windows too
+- Opens in a real app window using GTK-WebKit, Qt-WebEngine or pywebview if
+  you have one, otherwise Chromium/Chrome/Brave in app mode, otherwise your
+  browser. It needs nothing but `python3`
+- Locked down: listens on `127.0.0.1` only, on a random port, with a secret
+  token per launch. It only runs YaYaP's own module actions, never a shell.
+  It quits by itself a little while after you close the window
+- Shows up in your app menu as **YaYaP Control Center** (the terminal version
+  is there too)
+
+## The terminal Control Center
 
 Like YaST, YaYaP is organised as **categories → modules → actions**:
 
@@ -65,7 +88,6 @@ yayap center --list   # print every module and action as a tree
 - Actions that need input (a service name, a port, a user…) ask for it
 - Every action is just a normal command underneath, and the center shows
   you which one it runs, so you learn the CLI as you click around
-- Installs a **"YaYaP Control Center"** entry in your app menu
 
 ## Modules
 
@@ -122,6 +144,7 @@ Drop a file in `lib/commands/<name>.sh`:
 ```bash
 # about: Say hi
 # category: Misc
+# icon: 👋
 cmd_hello() { info "hello, ${1:-world}"; }
 cmd_hello_help() { echo "Usage: yayap hello [NAME]"; }   # optional
 
@@ -135,14 +158,17 @@ A
 }
 ```
 
-That's it — it shows up in `yayap help` and the Control Center automatically. Helpers like
+That's it — it shows up in `yayap help`, the terminal Control Center and the
+GUI automatically. If an action asks "are you sure?", use `confirm`; for
+passwords use `ask_secret`, and for root use `as_root`. Those three
+automatically become dialogs in the GUI. Helpers like
 `info`, `ok`, `warn`, `die`, `kv`, `has`, `need`, `as_root`, `confirm`, and
 `human_size` come from `lib/core.sh`.
 
 ## Tests
 
 ```sh
-tests/run.sh
+tests/run.sh          # everything (includes tests/gui_test.py when python3 is around)
 ```
 
 ## License

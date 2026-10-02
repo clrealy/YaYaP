@@ -25,6 +25,7 @@ need() { local c; for c in "$@"; do has "$c" || die "required command not found:
 # Run a command as root, using sudo/doas only when necessary.
 as_root() {
     if [[ $EUID -eq 0 ]]; then "$@"
+    elif has sudo && [[ -n "${SUDO_ASKPASS:-}" && ! -t 0 ]]; then sudo -A "$@"   # GUI: password dialog
     elif has sudo; then sudo "$@"
     elif has doas; then doas "$@"
     else die "need root privileges but neither sudo nor doas is available"
@@ -32,8 +33,10 @@ as_root() {
 }
 
 # Ask a yes/no question; default no. YAYAP_YES=1 auto-confirms.
+# In the GUI, $YAYAP_ASK pops up a dialog instead.
 confirm() {
     [[ "${YAYAP_YES:-0}" == 1 ]] && return 0
+    if [[ -n "${YAYAP_ASK:-}" ]]; then "$YAYAP_ASK" --confirm "$*"; return; fi
     local reply
     read -r -p "$* [y/N] " reply
     [[ "$reply" =~ ^[Yy]([Ee][Ss])?$ ]]
@@ -61,6 +64,15 @@ parse_size() {
     esac
 }
 
+# Ask for a secret (password). Terminal: hidden prompt. GUI: password dialog.
+ask_secret() {
+    if [[ -n "${YAYAP_ASK:-}" ]]; then "$YAYAP_ASK" --secret "$*"; return; fi
+    local s
+    read -r -s -p "$*: " s || return 1
+    echo >&2
+    printf '%s\n' "$s"
+}
+
 # Bytes -> human readable (1024 base).
 human_size() {
     awk -v b="${1:-0}" 'BEGIN {
@@ -76,12 +88,19 @@ _cmd_file() { printf '%s/commands/%s.sh' "$YAYAP_LIB" "$1"; }
 # Each command file starts with a line: "# about: <one-line description>"
 _cmd_about() { sed -n 's/^# about: //p' "$1" | head -n1; }
 
-# ...and optionally "# category: <YaST-style category>" (default: Misc).
+# ...and optionally "# category: <YaST-style category>" (default: Misc)
+# and "# icon: <emoji>" for the GUI.
 YAYAP_CATEGORIES=("Software" "System" "Hardware" "Network" "Security and Users" "Misc")
 _cmd_category() {
     local c
     c="$(sed -n 's/^# category: //p' "$1" | head -n1)"
     echo "${c:-Misc}"
+}
+
+_cmd_icon() {
+    local i
+    i="$(sed -n 's/^# icon: //p' "$1" | head -n1)"
+    echo "${i:-🧩}"
 }
 
 yayap_commands() {
@@ -120,6 +139,7 @@ yayap_help() {
         done < <(yayap_commands)
     done
     printf '\n  %s%-12s%s %s\n' "$C_GREEN" "center" "$C_RESET" "The YaST-style Control Center (--list prints the tree)"
+    printf '  %s%-12s%s %s\n' "$C_GREEN" "gui" "$C_RESET" "The Control Center as a desktop app (needs python3)"
     printf '\n%sGlobal flags:%s -y/--yes (auto-confirm), --no-color, -V/--version, -h/--help\n' "$C_BOLD" "$C_RESET"
     printf '%sUI:%s YAYAP_UI=whiptail|dialog|plain picks the Control Center look\n' "$C_BOLD" "$C_RESET"
 }
@@ -154,6 +174,11 @@ yayap_main() {
         if [[ -t 0 && -t 1 ]]; then name=center; else yayap_help; return 0; fi
     else
         shift
+    fi
+
+    if [[ "$name" == gui ]]; then
+        need python3
+        exec python3 "$YAYAP_LIB/gui/yayap-gui.py" --yayap "$YAYAP_ROOT/bin/yayap" "$@"
     fi
 
     if [[ "$name" == center ]]; then

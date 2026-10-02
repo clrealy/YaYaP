@@ -1,5 +1,6 @@
 # about: Show local interface addresses and your public IP
 # category: Network
+# icon: 🌐
 cmd_myip() {
     header "Local"
     if has ip; then

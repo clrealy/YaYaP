@@ -1,5 +1,6 @@
 # about: System Log viewer (journald or /var/log)
 # category: System
+# icon: 📜
 cmd_logs_help() {
     cat <<'H'
 Usage: yayap logs [-n LINES] [-e] [-b] [-f] [-u UNIT]

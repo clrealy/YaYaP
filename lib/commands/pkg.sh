@@ -1,5 +1,6 @@
 # about: One package-manager syntax for apt, dnf, pacman, zypper, apk
 # category: Software
+# icon: 📦
 cmd_pkg_help() {
     cat <<'H'
 Usage: yayap pkg <install|remove|update|search|info|list> [PACKAGES...]

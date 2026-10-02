@@ -1,5 +1,6 @@
 # about: Make a timestamped .tar.gz backup of files or directories
 # category: System
+# icon: 💾
 cmd_backup_help() {
     cat <<'H'
 Usage: yayap backup PATH... [-o OUTDIR]

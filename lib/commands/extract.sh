@@ -1,5 +1,6 @@
 # about: Extract any archive (tar, zip, 7z, rar, gz, xz, zst, ...)
 # category: Misc
+# icon: 🗜️
 cmd_extract_help() { echo "Usage: yayap extract ARCHIVE... [-d DEST]"; }
 cmd_extract() {
     local dest="" files=()

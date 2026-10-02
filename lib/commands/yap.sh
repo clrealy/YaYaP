@@ -1,5 +1,6 @@
 # about: Yet another yap. Wisdom from the toolbox.
 # category: Misc
+# icon: 🐮
 cmd_yap() {
     local -a yaps=(
         "There are only two hard things in CS: cache invalidation, naming things, and off-by-one errors."

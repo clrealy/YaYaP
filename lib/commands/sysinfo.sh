@@ -1,5 +1,6 @@
 # about: Show a quick overview of this machine
 # category: Hardware
+# icon: ℹ️
 cmd_sysinfo() {
     local distro="unknown" cpu cores mem_total mem_avail up
     if [[ -r /etc/os-release ]]; then

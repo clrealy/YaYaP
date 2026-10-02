@@ -1,5 +1,6 @@
 # about: Hardware Information: CPU, memory, disks, PCI and USB devices
 # category: Hardware
+# icon: 🖥️
 cmd_hardware_help() { echo "Usage: yayap hardware [all|cpu|memory|disks|pci|usb]"; }
 cmd_hardware() {
     local what="${1:-all}"

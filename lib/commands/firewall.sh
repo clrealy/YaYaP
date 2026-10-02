@@ -1,5 +1,6 @@
 # about: Firewall: status, open and close ports (ufw or firewalld)
 # category: Security and Users
+# icon: 🧱
 cmd_firewall_help() {
     cat <<'H'
 Usage: yayap firewall <status|allow|deny|on|off> [PORT[/tcp|/udp]]
