@@ -46,8 +46,8 @@ t "extract missing"    bash -c "! '$Y' extract '$TMP/nope.zip'"
 t "center --list"      out_has "Security and Users" center --list
 t "center has actions" out_has "yayap services start {Service_name}" center --list
 t "help by category"   out_has "Hardware" help
-# plain UI: Misc (6) -> yap (3) -> Enter -> back -> quit
-t "center plain nav"   bash -c "printf '6\\n3\\n\\nq\\nq\\n' | YAYAP_UI=plain '$Y' center 2>&1 | grep -q '(oo)'"
+# plain UI: Misc (6) -> yap (4) -> Enter -> back -> quit
+t "center plain nav"   bash -c "printf '6\\n4\\n\\nq\\nq\\n' | YAYAP_UI=plain '$Y' center 2>&1 | grep -q '(oo)'"
 # action with a prompt: Security (5) -> passgen -> Custom length (4) -> 12 -> Enter -> back x3
 t "center prompt"      bash -c "printf '5\\n2\\n4\\n12\\n\\nq\\nq\\nq\\n' | YAYAP_UI=plain '$Y' center 2>/dev/null | grep -qx '[[:graph:]]\\{12\\}'"
 t "center cancel"      bash -c "printf 'q\\n' | YAYAP_UI=plain '$Y' center"
@@ -68,6 +68,13 @@ t "firewall bad port"  bash -c "! '$Y' firewall allow 'abc'"
 t "hardware"           out_has "Memory" hardware
 t "hardware bad arg"   bash -c "! '$Y' hardware gpu-go-brr"
 t "logs bad arg"       bash -c "! '$Y' logs -n lots"
+
+# --- ouroboros: the snake eats itself ---
+t "ouroboros"          out_has "caught its tail" ouroboros -n 2
+t "ouroboros cleans up" bash -c "TMPDIR='$TMP/ou' && mkdir -p \$TMPDIR && TMPDIR=\$TMPDIR '$Y' ouroboros -n 1 >/dev/null && [[ -z \$(ls -A \$TMPDIR) ]]"
+t "ouroboros mutation" bash -c "! YAYAP_OUROBOROS_GEN=1 YAYAP_OUROBOROS_ORIGIN=nope '$Y' ouroboros -n 1"
+t "ouroboros bad n"    bash -c "! '$Y' ouroboros -n 99"
+t "fingerprint stable" bash -c "[[ \$('$Y' ouroboros --fingerprint) =~ ^[0-9a-f]{64}\$ && \$('$Y' ouroboros --fingerprint) == \$('$Y' ouroboros --fingerprint) ]]"
 
 t "killport bad port"  bash -c "! '$Y' killport abc"
 

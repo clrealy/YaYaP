@@ -6,6 +6,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: shellcheck
-        run: shellcheck -x bin/yayap lib/*.sh lib/commands/*.sh install.sh tests/run.sh completions/yayap.bash
+        run: shellcheck -x bin/yayap lib/*.sh lib/commands/*.sh install.sh tests/run.sh completions/yayap.bash tools/build-site.sh
       - name: tests
         run: tests/run.sh
+      - name: website builds
+        run: tools/build-site.sh /tmp/site && test -s /tmp/site/data.js

@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YaYaP — Yet Another "Yet Another" Program</title>
+<meta name="description" content="A YaST-style Linux control center for any distro: a desktop app, a terminal UI and plain commands for packages, services, users, firewall and more.">
+<link rel="icon" type="image/svg+xml" href="yayap.svg">
+<meta property="og:title" content="YaYaP — Yet Another &quot;Yet Another&quot; Program">
+<meta property="og:description" content="A YaST-style Linux control center for any distro.">
+<meta property="og:image" content="img/gui.png">
+<style>
+  :root {
+    --bg: #f6f8f4; --bg-2: #eef3eb; --panel: #ffffff; --border: #dbe3d7;
+    --text: #18241b; --muted: #57675b; --accent: #2f8f46; --accent-2: #1f7035; --accent-ink: #fff;
+    --accent-soft: #e2f3e5; --red: #e5403a; --yellow: #f6c33b; --blue: #2f7fd8;
+    --term: #111814; --term-text: #d7f5dc; --term-dim: #7fa287;
+    --shadow: 0 1px 2px rgba(0,0,0,.05), 0 10px 30px rgba(20,60,30,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1410; --bg-2: #141b15; --panel: #182019; --border: #2a362c;
+      --text: #e6f0e7; --muted: #9db0a1; --accent: #5cc274; --accent-2: #7fd894; --accent-ink: #0c1a10;
+      --accent-soft: #1d3223; --term: #0a0e0b; --term-text: #c9f2d0; --term-dim: #6f8f76;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.3);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Cantarell, "Noto Sans", Ubuntu, sans-serif;
+  }
+  a { color: var(--accent); }
+  code, pre, kbd { font-family: ui-monospace, "JetBrains Mono", "DejaVu Sans Mono", Menlo, monospace; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+  .hero .wrap > *, .ouro .wrap > *, .split > * { min-width: 0; }   /* let code blocks scroll instead of widening the page */
+  @media (max-width: 480px) { .wrap { padding: 0 16px; } }
+  section { padding: 84px 0; }
+  section + section { border-top: 1px solid var(--border); }
+  h2 { font-size: clamp(28px, 4vw, 40px); line-height: 1.15; margin: 0 0 12px; letter-spacing: -.02em; }
+  .lede { color: var(--muted); font-size: 18px; max-width: 660px; margin: 0 0 36px; }
+  .eyebrow { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; margin: 0 0 8px; }
+
+  /* top bar */
+  .top { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px); background: color-mix(in srgb, var(--bg) 82%, transparent); border-bottom: 1px solid var(--border); }
+  .top .wrap { display: flex; align-items: center; gap: 22px; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; color: var(--text); text-decoration: none; font-size: 18px; }
+  .brand img { width: 32px; height: 32px; }
+  .top nav { margin-left: auto; display: flex; gap: 20px; font-size: 15px; }
+  .top nav a { color: var(--muted); text-decoration: none; }
+  .top nav a:hover { color: var(--text); }
+  @media (max-width: 720px) { .top nav a:not(.gh) { display: none; } }
+
+  /* hero */
+  .hero { padding: 72px 0 84px; background: radial-gradient(1200px 400px at 70% -10%, var(--accent-soft), transparent 70%); }
+  .hero .wrap { display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: center; }
+  .hero h1 { font-size: clamp(44px, 7vw, 76px); line-height: 1; margin: 0 0 14px; letter-spacing: -.035em; }
+  .hero h1 span { color: var(--accent); }
+  .hero .tag { font-size: clamp(18px, 2.2vw, 22px); font-weight: 650; margin: 0 0 10px; }
+  .hero p.sub { color: var(--muted); font-size: 18px; margin: 0 0 30px; max-width: 560px; }
+  .hero-logo { justify-self: center; width: min(320px, 70vw); filter: drop-shadow(0 24px 40px rgba(31,112,53,.25)); animation: bob 5s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(-10px) rotate(-1.5deg); } }
+  @media (prefers-reduced-motion: reduce) { .hero-logo { animation: none; } }
+  @media (max-width: 820px) {
+    .hero .wrap { grid-template-columns: 1fr; }
+    .hero-logo { order: -1; width: 180px; }
+  }
+
+  /* install box */
+  .install { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); max-width: 560px; overflow: hidden; }
+  .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-2); }
+  .tabs button { flex: 1; border: 0; background: none; padding: 10px 12px; font: inherit; font-size: 14px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
+  .tabs button[aria-selected="true"] { color: var(--text); font-weight: 650; border-bottom-color: var(--accent); background: var(--panel); }
+  .cmd { display: flex; align-items: flex-start; gap: 10px; padding: 14px 14px 14px 18px; }
+  .cmd pre { margin: 0; flex: 1; overflow-x: auto; font-size: 14.5px; line-height: 1.7; }
+  .cmd pre::before { content: ""; }
+  .copy { flex: none; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); border-radius: 8px; padding: 5px 11px; font: inherit; font-size: 13px; cursor: pointer; }
+  .copy:hover { border-color: var(--accent); }
+  .hero .links { margin-top: 18px; display: flex; gap: 18px; flex-wrap: wrap; font-size: 15px; }
+
+  /* three ways */
+  .ways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .way { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 22px; box-shadow: var(--shadow); display: flex; flex-direction: column; min-width: 0; }
+  .way h3 { margin: 0 0 4px; font-size: 20px; }
+  .way p { margin: 0 0 16px; color: var(--muted); font-size: 15px; }
+  .way code.run { display: inline-block; background: var(--accent-soft); color: var(--accent-2); padding: 1px 8px; border-radius: 6px; font-size: 14px; }
+  .shot { margin-top: auto; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: var(--term); }
+  .shot img { display: block; width: 100%; height: auto; }
+  .term { margin: 0; padding: 14px; background: var(--term); color: var(--term-text); font-size: 11.5px; line-height: 1.45; overflow-x: auto; white-space: pre; }
+  .term .dim { color: var(--term-dim); }
+  .term .g { color: #7fe39a; }
+  @media (max-width: 900px) { .ways { grid-template-columns: 1fr; } }
+
+  /* modules */
+  .cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+  .cat { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px; box-shadow: var(--shadow); }
+  .cat h3 { margin: 0 0 10px; font-size: 16px; display: flex; gap: 8px; align-items: center; }
+  .cat ul { list-style: none; margin: 0; padding: 0; }
+  .cat li { display: grid; grid-template-columns: 30px 1fr; gap: 2px 8px; padding: 9px 0; border-top: 1px solid var(--border); }
+  .cat li:first-child { border-top: 0; }
+  .cat .ico { font-size: 20px; grid-row: span 2; line-height: 1.3; }
+  .cat .nm { font-family: ui-monospace, "DejaVu Sans Mono", monospace; font-weight: 700; font-size: 14.5px; }
+  .cat .ab { color: var(--muted); font-size: 14px; }
+
+  /* ouroboros */
+  .ouro { background: var(--bg-2); }
+  .ouro .wrap { display: grid; grid-template-columns: .9fr 1.1fr; gap: 48px; align-items: center; }
+  .snake-stage { display: grid; place-items: center; }
+  .snake-box { position: relative; width: min(420px, 80vw); }
+  /* the ring isn't centred in the drawing: spin around the ring, not the picture */
+  .snake {
+    display: block; width: 100%; height: auto; transform-origin: 49.4% 53.4%;
+    animation: chase 40s linear infinite;
+    mix-blend-mode: multiply;   /* drops the drawing's white paper on light backgrounds */
+  }
+  @media (prefers-color-scheme: dark) { .snake { filter: invert(1); mix-blend-mode: screen; } }
+  @keyframes chase { to { transform: rotate(-360deg); } }
+  .snake.gulp { animation: chase 40s linear infinite, gulp .45s ease-out 2; }
+  @keyframes gulp { 50% { scale: 1.06; } }
+  @media (prefers-reduced-motion: reduce) { .snake, .snake.gulp { animation: none; } }
+  .gen-count { position: absolute; left: 49.4%; top: 53.4%; transform: translate(-50%, -50%); pointer-events: none; text-align: center; }
+  .gen-count b { display: block; font-size: 64px; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .gen-count span { color: var(--muted); font-size: 14px; }
+  .ouro .term { font-size: 12px; min-height: 290px; border-radius: 12px; border: 1px solid var(--border); }
+  .ouro-controls { display: flex; gap: 12px; align-items: center; margin: 18px 0 0; flex-wrap: wrap; }
+  .btn { border: 0; border-radius: 10px; padding: 10px 18px; font: inherit; font-weight: 650; cursor: pointer; background: var(--accent); color: var(--accent-ink); }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .ouro ol { padding-left: 20px; color: var(--muted); margin: 0 0 22px; }
+  .ouro ol li { margin: 4px 0; }
+  .ouro ol code, .lede code { background: var(--accent-soft); color: var(--accent-2); padding: 0 6px; border-radius: 5px; font-size: .92em; }
+  @media (max-width: 900px) { .ouro .wrap { grid-template-columns: 1fr; } }
+
+  /* add your own */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+  .code { margin: 0; padding: 18px; border-radius: 12px; background: var(--term); color: var(--term-text); font-size: 13.5px; line-height: 1.55; overflow-x: auto; border: 1px solid var(--border); }
+  .code .c { color: var(--term-dim); }
+  .feat { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+  .feat li { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .feat b { display: block; }
+  .feat span { color: var(--muted); font-size: 15px; }
+  @media (max-width: 820px) { .split { grid-template-columns: 1fr; } }
+
+  footer { padding: 40px 0 56px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); }
+  footer .wrap { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  footer img { width: 26px; height: 26px; }
+  footer .sp { flex: 1; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="yayap.svg" alt="">YaYaP</a>
+    <nav>
+      <a href="#ways">Three ways in</a>
+      <a href="#modules">Modules</a>
+      <a href="#ouroboros">Ouroboros</a>
+      <a href="#extend">Extend it</a>
+      <a class="gh" href="https://github.com/clrealy/YaYaP">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <h1>Ya<span>Ya</span>P</h1>
+        <p class="tag">Yet Another "Yet Another" Program</p>
+        <p class="sub">A YaST-style control center for <em>any</em> Linux distro. Packages, services, users, firewall, logs and more, as a desktop app, a terminal UI, or plain commands. Written in Bash, needs almost nothing.</p>
+        <div class="install">
+          <div class="tabs" role="tablist">
+            <button role="tab" aria-selected="true" data-tab="gurt">With GURT</button>
+            <button role="tab" aria-selected="false" data-tab="nogurt">No GURT yet</button>
+            <button role="tab" aria-selected="false" data-tab="git">From git</button>
+          </div>
+          <div class="cmd">
+            <pre id="cmd-text"></pre>
+            <button class="copy" id="copy">Copy</button>
+          </div>
+        </div>
+        <div class="links">
+          <a href="https://github.com/clrealy/YaYaP">Source on GitHub</a>
+          <a href="https://github.com/clrealy/GURT">What's GURT? 🦆</a>
+          <span style="color:var(--muted)">v<span id="ver">0.4.0</span> · MIT</span>
+        </div>
+      </div>
+      <img class="hero-logo" src="yayap.svg" alt="The YaYaP parrot saying “ya ya”">
+    </div>
+  </section>
+
+  <section id="ways">
+    <div class="wrap">
+      <p class="eyebrow">Like YaST, three ways in</p>
+      <h2>Click it, arrow-key it, or type it.</h2>
+      <p class="lede">Every module works in all three. The GUI and the TUI show you the real command they run, so you pick up the CLI as you go.</p>
+      <div class="ways">
+        <div class="way">
+          <h3>🖥️ Desktop app</h3>
+          <p><code class="run">yayap gui</code> Categories, module tiles, live output. sudo passwords pop up as dialogs.</p>
+          <div class="shot"><img src="img/gui.png" alt="The YaYaP Control Center app, running the ouroboros module" loading="lazy" width="1770" height="1110"></div>
+        </div>
+        <div class="way">
+          <h3>⌨️ Terminal UI</h3>
+          <p><code class="run">yayap</code> The ncurses Control Center. Uses whiptail or dialog, or a plain menu.</p>
+          <div class="shot"><pre class="term" aria-label="The YaYaP terminal UI main menu"><span class="dim">┌──────────┤</span>  YaYaP Control Center  <span class="dim">├──────────┐</span>
+<span class="dim">│</span> pick a category                         <span class="dim">│</span>
+<span class="dim">│</span>                                         <span class="dim">│</span>
+<span class="dim">│</span>    <span class="g">Software           1 module</span>          <span class="dim">│</span>
+<span class="dim">│</span>    System             6 modules         <span class="dim">│</span>
+<span class="dim">│</span>    Hardware           3 modules         <span class="dim">│</span>
+<span class="dim">│</span>    Network            5 modules         <span class="dim">│</span>
+<span class="dim">│</span>    Security and Users 3 modules         <span class="dim">│</span>
+<span class="dim">│</span>    Misc               <span id="misc-count">4</span> modules         <span class="dim">│</span>
+<span class="dim">│</span>                                         <span class="dim">│</span>
+<span class="dim">│</span>        &lt;Ok&gt;              &lt;Quit&gt;         <span class="dim">│</span>
+<span class="dim">└─────────────────────────────────────────┘</span></pre></div>
+        </div>
+        <div class="way">
+          <h3>⚡ Plain commands</h3>
+          <p><code class="run">yayap &lt;module&gt;</code> Same syntax on Debian, Fedora, Arch, openSUSE, Alpine…</p>
+          <div class="shot"><pre class="term"><span class="dim">$</span> yayap pkg install htop
+<span class="dim">$</span> yayap pkg update
+<span class="dim">$</span> yayap services restart sshd
+<span class="dim">$</span> yayap users add alex
+<span class="dim">$</span> yayap firewall allow 8080/tcp
+<span class="dim">$</span> yayap datetime set-tz Europe/Berlin
+<span class="dim">$</span> yayap logs -e -b
+<span class="dim">$</span> yayap hardware usb
+<span class="dim">$</span> yayap ouroboros
+<span class="dim">$</span> yayap yap <span class="g">"hi"</span></pre></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="modules">
+    <div class="wrap">
+      <p class="eyebrow">Modules</p>
+      <h2><span id="mod-count">22</span> modules, sorted the YaST way.</h2>
+      <p class="lede">This list comes straight from the code every time the site gets built, so it's never out of date.</p>
+      <div class="cats" id="cats"></div>
+    </div>
+  </section>
+
+  <section id="ouroboros" class="ouro">
+    <div class="wrap">
+      <div class="snake-stage">
+        <div class="snake-box">
+          <img class="snake" id="snake" src="img/ouroboros.png" alt="An ouroboros: a snake eating its own tail" width="496" height="547">
+          <div class="gen-count" aria-live="polite"><b id="gen">0</b><span>generations eaten</span></div>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow">yayap ouroboros</p>
+        <h2>The snake that eats itself 🐍</h2>
+        <p class="lede">"Yet Another 'Yet Another'" already eats its own tail, so YaYaP does too:</p>
+        <ol>
+          <li>It packs itself up with its own <code>backup</code> module…</li>
+          <li>…unpacks the copy with its own <code>extract</code> module…</li>
+          <li>…and hands over to that copy, which does it all again.</li>
+          <li>The last copy compares its fingerprint with the first. Same bytes? The snake caught its tail.</li>
+        </ol>
+        <pre class="term" id="ouro-term"><span class="dim">$</span> yayap ouroboros</pre>
+        <div class="ouro-controls">
+          <button class="btn" id="feed">Feed the snake</button>
+          <span style="color:var(--muted);font-size:14px">This is a real run, recorded when the site was built.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="extend">
+    <div class="wrap split">
+      <div>
+        <p class="eyebrow">Extend it</p>
+        <h2>One file = one module.</h2>
+        <p class="lede">Drop a script in <code>lib/commands/</code>. It shows up in the help, the TUI and the GUI with zero other changes.</p>
+        <ul class="feat">
+          <li><b>🔐 Root, done right</b><span><code>as_root</code> uses sudo or doas only when needed. In the GUI it becomes a password dialog.</span></li>
+          <li><b>❓ Asks first</b><span><code>confirm</code> and <code>ask_secret</code> are prompts in the terminal and dialogs in the app.</span></li>
+          <li><b>🐧 Any distro</b><span>GNU or busybox, systemd or OpenRC, apt to xbps. Tested on Alpine too.</span></li>
+        </ul>
+      </div>
+      <pre class="code"><span class="c"># lib/commands/hello.sh</span>
+<span class="c"># about: Say hi</span>
+<span class="c"># category: Misc</span>
+<span class="c"># icon: 👋</span>
+cmd_hello() {
+    info "hello, ${1:-world}"
+}
+
+<span class="c"># menu entries for the TUI + GUI: "Label|args"</span>
+<span class="c"># {Prompt} asks the user for a value</span>
+cmd_hello_actions() {
+    cat &lt;&lt;'A'
+Say hi to the world|
+Say hi to someone|{Name}
+A
+}</pre>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <img src="yayap.svg" alt="">
+    <span>YaYaP · Yet Another "Yet Another" Program</span>
+    <span class="sp"></span>
+    <a href="https://github.com/clrealy/YaYaP">GitHub</a>
+    <a href="https://github.com/clrealy/GURT">GURT</a>
+    <span>MIT License</span>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+"use strict";
+const D = window.YAYAP || { version: "", categories: [], ouroboros: [] };
+const CAT_ICONS = { "Software": "📦", "System": "⚙️", "Hardware": "🖥️", "Network": "🌐", "Security and Users": "🛡️", "Misc": "✨" };
+
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) el.setAttribute(k, v);
+  for (const kid of kids.flat()) if (kid != null) el.append(kid.nodeType ? kid : String(kid));
+  return el;
+}
+
+// install tabs
+const CMDS = {
+  gurt: "gurt install yayap",
+  nogurt: "curl -fsSL https://raw.githubusercontent.com/clrealy/GURT/main/install.sh | sh\ngurt install yayap",
+  git: "git clone https://github.com/clrealy/YaYaP && cd YaYaP\n./install.sh        # installs to ~/.local, no root",
+};
+const cmdText = document.getElementById("cmd-text");
+function showTab(name) {
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
+  cmdText.textContent = CMDS[name];
+}
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
+showTab("gurt");
+document.getElementById("copy").addEventListener("click", async (e) => {
+  const text = cmdText.textContent.split("\n").map(l => l.replace(/\s+#.*$/, "")).join("\n");
+  try { await navigator.clipboard.writeText(text); e.target.textContent = "Copied ✓"; }
+  catch { e.target.textContent = "Select + copy"; }
+  setTimeout(() => (e.target.textContent = "Copy"), 1600);
+});
+
+// data from the build
+if (D.version) document.getElementById("ver").textContent = D.version;
+const all = D.categories.flatMap(c => c.modules);
+if (all.length) document.getElementById("mod-count").textContent = all.length;
+const misc = D.categories.find(c => c.name === "Misc");
+if (misc) document.getElementById("misc-count").textContent = misc.modules.length;
+document.getElementById("cats").replaceChildren(...D.categories.map(c =>
+  h("div", { class: "cat" },
+    h("h3", {}, CAT_ICONS[c.name] || "🧩", " ", c.name),
+    h("ul", {}, c.modules.map(m =>
+      h("li", { title: m.actions.join(" · ") },
+        h("span", { class: "ico" }, m.icon),
+        h("span", { class: "nm" }, m.name),
+        h("span", { class: "ab" }, m.about)))))));
+
+// the snake
+const term = document.getElementById("ouro-term");
+const feed = document.getElementById("feed");
+const snake = document.getElementById("snake");
+const genEl = document.getElementById("gen");
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let total = 0;
+feed.addEventListener("click", async () => {
+  feed.disabled = true;
+  term.replaceChildren(h("span", { class: "dim" }, "$"), " yayap ouroboros\n");
+  for (const line of D.ouroboros) {
+    await new Promise(r => setTimeout(r, reduced ? 0 : (line.includes("hatched") ? 520 : 70)));
+    const m = line.match(/^\s+gen (\d+)/);
+    if (m && +m[1] > 0) {
+      total++; genEl.textContent = total;
+      snake.classList.remove("gulp"); void snake.offsetWidth; snake.classList.add("gulp");
+    }
+    term.append(/caught its tail|✔/.test(line) ? h("span", { class: "g" }, line) : line, "\n");
+    term.scrollTop = term.scrollHeight;
+  }
+  feed.textContent = "Feed it again";
+  feed.disabled = false;
+});
+</script>
+</body>
+</html>
