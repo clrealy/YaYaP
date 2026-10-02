@@ -11,6 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+LOGO = os.path.join(HERE, "yayap.svg")
 TOKEN = secrets.token_urlsafe(24)
 YAYAP = "yayap"
 PORT = 0
@@ -177,6 +178,9 @@ class Handler(BaseHTTPRequestHandler):
             with open(os.path.join(HERE, "index.html"), "rb") as f:
                 html = f.read().replace(b"__TOKEN__", TOKEN.encode())
             return self._send(200, html, "text/html; charset=utf-8")
+        if u.path in ("/yayap.svg", "/favicon.ico") and self._host_ok():   # the logo isn't secret
+            with open(LOGO, "rb") as f:
+                return self._send(200, f.read(), "image/svg+xml")
         if not self._authed():
             return self._send(403, {"error": "forbidden"})
         if u.path == "/api/tree":
@@ -288,7 +292,10 @@ def native_window(tk, url):
         GLib.set_application_name(title)
         win = Gtk.Window(title=title)
         win.set_default_size(w, h)
-        win.set_icon_name("preferences-system")
+        try:
+            win.set_icon_from_file(LOGO)
+        except Exception:  # noqa: BLE001 — no SVG loader, keep the theme icon
+            win.set_icon_name("preferences-system")
         view = WebKit2.WebView()
         view.load_uri(url)
         win.add(view)
@@ -300,13 +307,16 @@ def native_window(tk, url):
             from PyQt6.QtWidgets import QApplication
             from PyQt6.QtWebEngineWidgets import QWebEngineView
             from PyQt6.QtCore import QUrl
+            from PyQt6.QtGui import QIcon
         else:
             from PySide6.QtWidgets import QApplication
             from PySide6.QtWebEngineWidgets import QWebEngineView
             from PySide6.QtCore import QUrl
+            from PySide6.QtGui import QIcon
         app = QApplication(["yayap"])
+        app.setWindowIcon(QIcon(LOGO))
         app.setApplicationName(title)
-        app.setDesktopFileName("yayap-gui")
+        app.setDesktopFileName("yayap")
         view = QWebEngineView()
         view.setWindowTitle(title)
         view.resize(w, h)

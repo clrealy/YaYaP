@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220" width="760" height="220">
+  <title>YaYaP: Yet Another "Yet Another" Program</title>
+  <style>
+    .name { fill: #1d2a1f; font: 800 92px "DejaVu Sans", Verdana, sans-serif; letter-spacing: -2px; }
+    .tag  { fill: #4b5a4e; font: 600 23px "DejaVu Sans", Verdana, sans-serif; }
+    .sub  { fill: #2f8f46; font: 600 17px "DejaVu Sans Mono", Menlo, monospace; }
+    @media (prefers-color-scheme: dark) {
+      .name { fill: #eef5ef; } .tag { fill: #b8c7bb; } .sub { fill: #5cc274; }
+    }
+  </style>
+  <g transform="translate(10 10) scale(0.78125)">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#43b462"/>
+      <stop offset="1" stop-color="#1f7035"/>
+    </linearGradient>
+    <clipPath id="tile"><rect x="8" y="8" width="240" height="240" rx="56"/></clipPath>
+    <clipPath id="body"><path d="M30 256 L32 168 Q34 92 106 86 Q162 84 172 138 Q176 196 150 256 Z"/></clipPath>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#bg)"/>
+  <g clip-path="url(#tile)">
+    <!-- body + head -->
+    <path d="M30 256 L32 168 Q34 92 106 86 Q162 84 172 138 Q176 196 150 256 Z" fill="#e5403a"/>
+    <!-- crest -->
+    <path d="M70 102 Q72 66 98 60 Q90 78 100 88 Q104 62 130 62 Q116 78 122 92 Z" fill="#e5403a"/>
+    <!-- wing bands -->
+    <g clip-path="url(#body)">
+      <path d="M20 206 Q92 186 190 214 L190 256 L20 256 Z" fill="#f6c33b"/>
+      <path d="M20 228 Q92 210 190 236 L190 256 L20 256 Z" fill="#2f7fd8"/>
+    </g>
+    <!-- face patch + eye -->
+    <ellipse cx="130" cy="132" rx="28" ry="23" fill="#ffffff"/>
+    <circle cx="132" cy="129" r="9.5" fill="#1b1b1b"/>
+    <circle cx="135.5" cy="125.5" r="3" fill="#ffffff"/>
+    <!-- beak -->
+    <path d="M150 146 Q170 146 179 160 Q170 178 152 171 Z" fill="#2b2b2b"/>
+    <path d="M150 114 Q198 108 203 150 Q204 172 187 181 Q190 160 177 150 Q164 142 150 147 Z" fill="#f4e7c9"/>
+  </g>
+  <!-- speech bubble: the parrot repeating itself -->
+  <path d="M164 26 H222 Q238 26 238 42 V72 Q238 88 222 88 H196 L178 104 L182 88 H164 Q148 88 148 72 V42 Q148 26 164 26 Z" fill="#ffffff"/>
+  <text x="193" y="66" text-anchor="middle" font-family="DejaVu Sans, Verdana, sans-serif" font-weight="700" font-size="25" fill="#1f7035">ya ya</text>
+
+  </g>
+  <text class="name" x="232" y="112">YaYaP</text>
+  <text class="tag" x="236" y="152">Yet Another "Yet Another" Program</text>
+  <text class="sub" x="236" y="186">a YaST-style control center for any distro</text>
+</svg>

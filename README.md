@@ -1,6 +1,9 @@
+<p align="center"><img src="share/banner.svg" alt="YaYaP: Yet Another &quot;Yet Another&quot; Program" width="640"></p>
+
 # YaYaP — Yet Another "Yet Another" Program
 
-Because "Yet Another Program" was already taken. 🐧
+Because "Yet Another Program" was already taken. Meet the mascot: a parrot,
+because it's yet another "yet another" and parrots repeat themselves. 🦜
 
 A **YaST-style Linux control center** written in Bash. Like YaST it comes three
 ways: a **desktop app** (`yayap gui`), a **terminal UI** (`yayap`), and plain

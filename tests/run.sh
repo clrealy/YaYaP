@@ -40,6 +40,7 @@ t "extract .gz"        bash -c "gzip -k '$TMP/src/sub/a.txt' && '$Y' extract '$T
 command -v bzip2 >/dev/null && \
 t "extract tar.bz2"    bash -c "tar -cjf '$TMP/s.tbz2' -C '$TMP' src && '$Y' extract '$TMP/s.tbz2' -d '$TMP/b' && [[ -f '$TMP/b/src/sub/a.txt' ]]"
 t "backup rel path"    bash -c "cd '$TMP/src' && '$Y' backup sub -o '$TMP/bk2' && tar -tzf '$TMP'/bk2/sub-*.tar.gz | grep -q '^sub/a.txt'"
+t "install has icon"   bash -c "PREFIX='$TMP/inst' '$ROOT/install.sh' >/dev/null && [[ -f '$TMP/inst/share/icons/hicolor/scalable/apps/yayap.svg' ]] && grep -qx 'Icon=yayap' '$TMP/inst/share/applications/yayap.desktop'"
 t "extract missing"    bash -c "! '$Y' extract '$TMP/nope.zip'"
 # --- control center (YaST-style) ---
 t "center --list"      out_has "Security and Users" center --list

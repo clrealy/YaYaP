@@ -4,7 +4,7 @@
 set -o pipefail
 
 # shellcheck disable=SC2034 # used by lib/core.sh
-YAYAP_VERSION="0.3.0"
+YAYAP_VERSION="0.3.1"
 
 # Resolve our real location (follows symlinks) so lib/ can be found when installed.
 _self="${BASH_SOURCE[0]}"

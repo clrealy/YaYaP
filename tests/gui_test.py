@@ -54,6 +54,8 @@ def run(module, action=None, values=None):
 try:
     t("page needs token", lambda: call("/", token=None)[0] == 403)
     t("page with token", lambda: urllib.request.urlopen(url, timeout=5).status == 200)
+    t("logo is served", lambda: call("/yayap.svg", token=None)[1].startswith(b"<svg"))
+    t("logo needs our Host", lambda: call("/yayap.svg", token=None, host="evil.example")[0] == 403)
     t("api needs token", lambda: call("/api/tree", token=None)[0] == 403)
     t("api wrong token", lambda: call("/api/tree", token="nope")[0] == 403)
     t("api rejects foreign Host", lambda: call("/api/tree", host="evil.example")[0] == 403)
